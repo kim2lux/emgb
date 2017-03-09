@@ -20,6 +20,8 @@ void	initRegister(struct s_gb *s_gb)
 	
 	s_gb->gb_pad.button_key = 0x0f;
 	s_gb->gb_pad.button_dir = 0x0f;
+
+	s_gb->running = 1;
 	SET_ZERO();
 	SET_HALFC();
 	SET_CARRY();
@@ -31,7 +33,6 @@ void	initRegister(struct s_gb *s_gb)
 
 void gb(char *fileName)
 {
-	unsigned char	running = 1;
 	unsigned char	fopcode = 0;
 	struct s_gb		*s_gb;
 	
@@ -43,7 +44,7 @@ void gb(char *fileName)
 	initTimer(s_gb);
 	initCpu(s_gb);
 
-	while (running)
+	while (s_gb->running)
 	{
 		handleEvent(s_gb);
 		if (s_gb->gb_cpu.stopCpu == 0) {
@@ -57,4 +58,15 @@ void gb(char *fileName)
 		doInterupt(s_gb);
 		updateTimer(s_gb);
 	}
+
+	SDL_DestroyWindow(s_gb->gb_gpu.window);
+	SDL_DestroyWindow(s_gb->gb_gpu.window_d);
+
+	free(s_gb->gb_rom->rom);
+	free(s_gb->gb_rom);
+	free(s_gb->gb_gpu.pixels);
+	free(s_gb);
+
+	SDL_Quit();
+	exit(0); //
 }

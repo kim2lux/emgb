@@ -19,7 +19,7 @@ void initDisplay(struct s_gb *s_gb)
 	if (s_gb->gb_gpu.pixels == NULL)
 		ERR("cannot alloc pixels");
 
-	s_gb->gb_gpu.window_d = SDL_CreateWindow("DEBUG",
+/*	s_gb->gb_gpu.window_d = SDL_CreateWindow("DEBUG",
 		300, 600, 256, 256, 0);
 	if (s_gb->gb_gpu.window_d == NULL)
 		ERR("cannot create SDL windows");
@@ -28,7 +28,7 @@ void initDisplay(struct s_gb *s_gb)
 		ERR("cannot create SDL renderer");
 	s_gb->gb_gpu.texture_d = SDL_CreateTexture(s_gb->gb_gpu.renderer_d, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, 256, 256);
 	if (s_gb->gb_gpu.texture_d == NULL)
-		ERR("cannot create SDL texture");
+		ERR("cannot create SDL texture");*/
 }
 
 void renderingBg(struct s_gb *s_gb)
@@ -43,7 +43,7 @@ void renderingBg(struct s_gb *s_gb)
 
 
 	int baseOffset = s_gb->gb_io.lcd.BgTileMapSelect + ((((s_gb->gb_gpu.scanline) / 8)) * 0x20);
-	//int baseOffset = 0x9C00 + (((gb_gpu.scanline / 8) + s_io.scrollY) * 0x20);
+
 	posx = 0;
 	for (int index = 0; index < 20; index += 1)
 	{

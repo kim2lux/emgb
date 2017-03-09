@@ -18,6 +18,7 @@
 
 struct						s_gb
 {
+	unsigned char			running;
 	struct s_timer			gb_time;
 	struct s_register		gb_register;
 	struct s_io				gb_io;
