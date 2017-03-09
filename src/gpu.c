@@ -212,7 +212,7 @@ void renderingSprite(struct s_gb *s_gb)
 					color = 0x00aaaaaa;
 				else if (color == 3)
 					color = 0x00000000;
-				s_gb->gb_gpu.pixels[160 * (posy + y) + (posx + x)] = color;
+				s_gb->gb_gpu.pixels[160 * (posy + y) + (posx + x)] = color; //mem coruption error
 				dec--;
 	
 
