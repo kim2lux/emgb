@@ -68,5 +68,5 @@ void gb(char *fileName)
 	free(s_gb);
 
 	SDL_Quit();
-	exit(0); //
+	exit(0);
 }

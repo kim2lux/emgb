@@ -19,7 +19,7 @@ void initDisplay(struct s_gb *s_gb)
 	if (s_gb->gb_gpu.pixels == NULL)
 		ERR("cannot alloc pixels");
 
-/*	s_gb->gb_gpu.window_d = SDL_CreateWindow("DEBUG",
+	/*s_gb->gb_gpu.window_d = SDL_CreateWindow("DEBUG",
 		300, 600, 256, 256, 0);
 	if (s_gb->gb_gpu.window_d == NULL)
 		ERR("cannot create SDL windows");

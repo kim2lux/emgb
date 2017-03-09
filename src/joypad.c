@@ -83,8 +83,8 @@ void handleEvent(struct s_gb * gb_s)
 	{
 		switch (gb_s->gb_gpu.event.type) {
 		case SDL_QUIT: {
-			printf("Quit requested, quitting.\n");
-			exit(0);
+			printf("see u.\n");
+			gb_s->running = 0;
 		}
 		case SDL_KEYDOWN:
 			keyDown(gb_s);
