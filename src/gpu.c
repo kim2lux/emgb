@@ -19,7 +19,7 @@ void initDisplay(struct s_gb *s_gb)
 	if (s_gb->gb_gpu.pixels == NULL)
 		ERR("cannot alloc pixels");
 
-	/*s_gb->gb_gpu.window_d = SDL_CreateWindow("DEBUG",
+	s_gb->gb_gpu.window_d = SDL_CreateWindow("DEBUG",
 		300, 600, 256, 256, 0);
 	if (s_gb->gb_gpu.window_d == NULL)
 		ERR("cannot create SDL windows");
@@ -28,7 +28,10 @@ void initDisplay(struct s_gb *s_gb)
 		ERR("cannot create SDL renderer");
 	s_gb->gb_gpu.texture_d = SDL_CreateTexture(s_gb->gb_gpu.renderer_d, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, 256, 256);
 	if (s_gb->gb_gpu.texture_d == NULL)
-		ERR("cannot create SDL texture");*/
+		ERR("cannot create SDL texture");
+	s_gb->gb_gpu.pixels_d = malloc(sizeof(Uint32) * 256 * 256);
+	if (s_gb->gb_gpu.pixels_d == NULL)
+		ERR("cannot alloc pixels");
 }
 
 void renderingBg(struct s_gb *s_gb)
@@ -50,7 +53,10 @@ void renderingBg(struct s_gb *s_gb)
 		if (s_gb->gb_io.lcd.BgWindowTileData == 0x8800)
 		{
 			stileindex = (signed)(read8bit(index + baseOffset, s_gb));
+			
 			tmpaddr = baseaddr + ((stileindex + 128) * 16);
+			if ((baseOffset + index) == 0x9841)
+				printf("***  tiledataindex = %x *** \n", tmpaddr);
 		}
 		else
 		{
@@ -88,7 +94,7 @@ void displayAll(struct s_gb *s_gb)
 	int posx = 0;
 	int posy = 0;
 
-	for (int index = 0x8000; index < 0x9000; index += 0x10)
+	for (int index = 0x8000; index < 0x9800; index += 0x10)
 	{
 	
 		int tmpaddr = index;
@@ -118,7 +124,7 @@ void displayAll(struct s_gb *s_gb)
 			}
 			tmpaddr += 2;
 		}
-		if ((posx + 8) > 128) {
+		if ((posx + 8) >= (8*16)) {
 			posy += 8;
 			posx = 0;
 		}
@@ -247,18 +253,18 @@ void rendering(struct s_gb *s_gb)
 
 	// step 2 debug
 
-	/*memset(gb_gpu.pixels_d, 0x00ff0000, 256 * 256 * sizeof(Uint32));
-	SDL_RenderClear(gb_gpu.renderer_d);
-	SDL_LockTexture(gb_gpu.texture_d, NULL, &pixels_d, &pitch);
-	memcpy(gb_gpu.pixels_d, pixels_d, 256 * 256 * 4);
+	memset(s_gb->gb_gpu.pixels_d, 0x00ff0000, 256 * 256 * sizeof(Uint32));
+	SDL_RenderClear(s_gb->gb_gpu.renderer_d);
+	SDL_LockTexture(s_gb->gb_gpu.texture_d, NULL, &pixels, &pitch);
+	memcpy(s_gb->gb_gpu.pixels_d, pixels, 256 * 256 * 4);
 
-	displayAll();
-	memcpy(pixels_d, gb_gpu.pixels_d, 256 * 256 * 4);
-	SDL_UnlockTexture(gb_gpu.texture_d);
+	displayAll(s_gb);
+	memcpy(pixels, s_gb->gb_gpu.pixels_d, 256 * 256 * 4);
+	SDL_UnlockTexture(s_gb->gb_gpu.texture_d);
 
-	SDL_RenderCopy(gb_gpu.renderer_d, gb_gpu.texture_d, NULL, NULL);
-	SDL_RenderPresent(gb_gpu.renderer_d);
-	*/
+	SDL_RenderCopy(s_gb->gb_gpu.renderer_d, s_gb->gb_gpu.texture_d, NULL, NULL);
+	SDL_RenderPresent(s_gb->gb_gpu.renderer_d);
+	
 }
 
 void initGpu(struct s_gb *s_gb)

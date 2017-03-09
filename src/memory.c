@@ -45,6 +45,8 @@ unsigned char read8bit(unsigned short addr, struct s_gb *s_gb)
 	}
 	else if (addr >= 0xC000 && addr < 0xE000)
 	{
+		if (addr == 0xc0b7)
+			printf("read from ram 0xc0b7 %x\n", s_gb->gb_mem.ram[addr - 0xC000]);
 		return  s_gb->gb_mem.ram[addr - 0xC000];
 	}
 	else if (addr >= 0xE000 && addr < 0xFE00)
@@ -92,7 +94,10 @@ void	mcbHandleBanking(unsigned short addr, unsigned char value, struct s_gb *s_g
 
 	low5 = value & 0x1f;
 	//loRom bank change
-
+	if (addr < 0x2000) {
+		printf("RAM BANK !!\n");
+		getchar();
+	}
 	if (addr >= 0x2000 && addr < 0x4000) {
 		if (s_gb->gb_rom->romheader.cartridgeType == 1) {
 			MCB_romBanking &= 0xe0;
@@ -131,7 +136,12 @@ int write8bit(unsigned short addr, unsigned char value, struct s_gb *s_gb)
 	}
 	else if (addr >= 0x8000 && addr < 0xA000)
 	{
-
+		if (addr == 0x9920)
+		{
+			RDBG(s_gb);
+			printf(" \naddr %x value %x \n", addr, value);
+			getchar();
+		}
 		s_gb->gb_mem.vram[addr - 0x8000] = value;
 		return 0;
 	}
@@ -142,7 +152,8 @@ int write8bit(unsigned short addr, unsigned char value, struct s_gb *s_gb)
 	}
 	else if (addr >= 0xC000 && addr < 0xE000)
 	{
-	
+		if (addr == 0xc0b7)
+			printf("WRITE int ram 0xc0b7 %x\n", value);
 		s_gb->gb_mem.ram[addr - 0xC000] = value;
 		return 0;
 	}

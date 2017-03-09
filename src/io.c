@@ -66,6 +66,10 @@ void	updateLcdc(struct s_gb *s_gb)
 
 	if (s_gb->gb_io.lcdc & 0x80) s_gb->gb_io.lcd.LcdIsOn = 1;
 	else s_gb->gb_io.lcd.LcdIsOn = 0;
+
+	printf(" s_gb->gb_io.lcd.BgTileMapSelect %x s_gb->gb_io.lcd.BgWindowTileData %x\n", s_gb->gb_io.lcd.BgTileMapSelect, s_gb->gb_io.lcd.BgWindowTileData);
+	printf("display windows ? %x\n", s_gb->gb_io.lcd.WindowIsOn);
+
 }
 
 unsigned char padState(struct s_gb *s_gb)
