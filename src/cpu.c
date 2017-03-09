@@ -898,8 +898,9 @@ void ld_hl_sp_8(struct s_gb *s_gb)
 
 void daa(struct s_gb *s_gb)
 {
+	RDBG(s_gb);
 	unsigned short s = s_gb->gb_register.a;
-
+	s_gb->gb_cpu.totalTick += 4;
 	if (NEG_FLAG) {
 		if (HALFC_FLAG) s = (s - 0x06) & 0xFF;
 		if (CARRY_FLAG) s -= 0x60;
@@ -916,6 +917,7 @@ void daa(struct s_gb *s_gb)
 	else SET_ZERO();
 
 	if (s >= 0x100) SET_CARRY();
+	RDBG(s_gb);
 }
 
 void ld_addr_sp(struct s_gb *s_gb)

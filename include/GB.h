@@ -14,7 +14,7 @@
 #include "timer.h"
 #include "memory.h"
 
-
+//main struct
 
 struct						s_gb
 {

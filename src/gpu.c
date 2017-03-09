@@ -43,7 +43,6 @@ void renderingBg(struct s_gb *s_gb)
 
 
 	int baseOffset = s_gb->gb_io.lcd.BgTileMapSelect + ((((s_gb->gb_gpu.scanline) / 8)) * 0x20);
-
 	posx = 0;
 	for (int index = 0; index < 20; index += 1)
 	{
@@ -236,8 +235,8 @@ void rendering(struct s_gb *s_gb)
 	//
 	if (s_gb->gb_io.lcd.BgWindowDisplay == 1)
 		renderingBg(s_gb);
-	/*if (s_io.lcd.WindowIsOn == 1)
-		renderingWindow(); display window */ 
+	if (s_gb->gb_io.lcd.WindowIsOn == 1)
+		renderingWindow(s_gb);
 	if (s_gb->gb_io.lcd.SpriteIsOn == 1)
 		renderingSprite(s_gb);
 	memcpy(pixels, s_gb->gb_gpu.pixels, 160 * 144 * 4);

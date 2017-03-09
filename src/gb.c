@@ -34,9 +34,11 @@ void	initRegister(struct s_gb *s_gb)
 void gb(char *fileName)
 {
 	unsigned char	fopcode = 0;
-	struct s_gb		*s_gb;
-	
+	struct s_gb		*s_gb = NULL;
+
 	s_gb = malloc(sizeof(*s_gb));
+	if (s_gb == NULL)
+		ERR("Cannot allocate s_gb");
 	initRom(fileName, s_gb);
 	initRegister(s_gb);
 	initDisplay(s_gb);
@@ -60,7 +62,6 @@ void gb(char *fileName)
 	}
 
 	SDL_DestroyWindow(s_gb->gb_gpu.window);
-	SDL_DestroyWindow(s_gb->gb_gpu.window_d);
 
 	free(s_gb->gb_rom->rom);
 	free(s_gb->gb_rom);
