@@ -3,7 +3,7 @@ Another Gameboy emulator (C project, rendering through SDL)
 
 # Z80 CPU
 - Most of CPU instructions are now implemented
-- CB opcode is still missing, currently using https://github.com/CTurt/Cinoop/blob/master/source/cb.c (thank you Cinoop)
+- CB opcode is still missing, currently using https://github.com/CTurt/Cinoop/blob/master/source/cb.c
 
 # TODO 
 cpu instructions : 
@@ -27,5 +27,4 @@ For MSYS build you can directly build thanks to cmake
 Linux: 
 Use the cmake & make sure you installed SDL2 library
 
-# Contact
-jeremy.dellinger.jd@gmail.com
+

@@ -10,7 +10,7 @@ add_definitions("-D FREEGLUT_STATIC")
 
 include_directories(${SDL2_INCLUDE_DIR}  ${OPENGL_INCLUDE_DIR} ./include)
 
-set(SOURCE_FILES src/main.c src/rom.c src/gb.c src/cpu.c src/gpu.c src/memory.c src/io.c src/cb.c src/interupt.c src/debug.c src/joypad.c src/timer.c)
+set(SOURCE_FILES src/main.c src/rom.c src/gb.c src/cpu.c src/gpu.c src/memory.c src/io.c src/cb.c src/interupt.c src/debug.c src/joypad.c src/timer.c src/background.c src/seeu.c src/init.c)
 
 if (UNIX)
   SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -pedantic -Wextra")

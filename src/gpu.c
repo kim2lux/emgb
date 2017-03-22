@@ -1,24 +1,27 @@
 #include "io.h"
 #include "GB.h"
 
+#define GB_W 160
+#define GB_H 144
+
 void initDisplay(struct s_gb *s_gb)
 {
 	SDL_Init(SDL_INIT_VIDEO);
-
+	
 	s_gb->gb_gpu.window = SDL_CreateWindow("GB",
-		300, 300, 160, 144, 0);
+		300, 300, GB_W, GB_H, 0);
 	if (s_gb->gb_gpu.window == NULL)
 		ERR("cannot create SDL windows");
 	s_gb->gb_gpu.renderer = SDL_CreateRenderer(s_gb->gb_gpu.window, -1, SDL_RENDERER_TARGETTEXTURE);
 	if (s_gb->gb_gpu.renderer == NULL)
 		ERR("cannot create SDL renderer");
-	s_gb->gb_gpu.texture = SDL_CreateTexture(s_gb->gb_gpu.renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, 160, 144);
+	s_gb->gb_gpu.texture = SDL_CreateTexture(s_gb->gb_gpu.renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, GB_W, GB_H);
 	if (s_gb->gb_gpu.texture == NULL)
 		ERR("cannot create SDL texture");
-	s_gb->gb_gpu.pixels = malloc(sizeof(Uint32) * 160 * 144);
+	s_gb->gb_gpu.pixels = malloc(sizeof(Uint32) * GB_W * GB_H);
 	if (s_gb->gb_gpu.pixels == NULL)
 		ERR("cannot alloc pixels");
-
+	
 	s_gb->gb_gpu.window_d = SDL_CreateWindow("DEBUG",
 		300, 600, 256, 256, 0);
 	if (s_gb->gb_gpu.window_d == NULL)
@@ -32,57 +35,7 @@ void initDisplay(struct s_gb *s_gb)
 	s_gb->gb_gpu.pixels_d = malloc(sizeof(Uint32) * 256 * 256);
 	if (s_gb->gb_gpu.pixels_d == NULL)
 		ERR("cannot alloc pixels");
-}
-
-void renderingBg(struct s_gb *s_gb)
-{
-	unsigned short line;
-	int color = 0;
-	int dec;
-	int posx, x = 0;
-	unsigned char tileindex;
-	signed char stileindex;
-	int baseaddr = s_gb->gb_io.lcd.BgWindowTileData;
-
-
-	int baseOffset = s_gb->gb_io.lcd.BgTileMapSelect + ((((s_gb->gb_gpu.scanline) / 8)) * 0x20);
-	posx = 0;
-	for (int index = 0; index < 20; index += 1)
-	{
-		int tmpaddr;
-		if (s_gb->gb_io.lcd.BgWindowTileData == 0x8800)
-		{
-			stileindex = (signed)(read8bit(index + baseOffset, s_gb));
-			
-			tmpaddr = baseaddr + ((stileindex + 128) * 16);
-			if ((baseOffset + index) == 0x9841)
-				printf("***  tiledataindex = %x *** \n", tmpaddr);
-		}
-		else
-		{
-			tileindex = read8bit(index + baseOffset, s_gb);
-			tmpaddr = baseaddr + (tileindex * 16);
-		}
-		dec = 15;
-		line = read16bit(tmpaddr + ((s_gb->gb_gpu.scanline % 8) * 2), s_gb);
-		for (x = 0; x < 8; x++)
-		{
-			color = ((line >> dec) & 0x01);
-			if ((line >> (dec - 8)) & 0x01)
-				color += 2;
-			if (color == 0)
-				color = 0x00ffffff;
-			else if (color == 1)
-				color = 0x00444444;
-			else if (color == 2)
-				color = 0x00aaaaaa;
-			else if (color == 3)
-				color = 0x00000000;
-			s_gb->gb_gpu.pixels[160 * (s_gb->gb_gpu.scanline) + (posx + x)] = color;
-			dec--;
-		}
-		posx += 8;
-	}
+		
 }
 
 void displayAll(struct s_gb *s_gb)
@@ -233,16 +186,16 @@ void rendering(struct s_gb *s_gb)
 	int pitch = 0;
 	void *pixels;
 
-	memset(s_gb->gb_gpu.pixels, 0, 160 * 144 * sizeof(Uint32));
-	SDL_RenderClear(s_gb->gb_gpu.renderer);
+	//memset(s_gb->gb_gpu.pixels, 0, 160 * 144 * sizeof(Uint32));
+		SDL_RenderClear(s_gb->gb_gpu.renderer);
 	SDL_LockTexture(s_gb->gb_gpu.texture, NULL, &pixels, &pitch);
 	memcpy(s_gb->gb_gpu.pixels, pixels , 160 * 144 * 4);
 
-	//
+	
 	if (s_gb->gb_io.lcd.BgWindowDisplay == 1)
 		renderingBg(s_gb);
-	if (s_gb->gb_io.lcd.WindowIsOn == 1)
-		renderingWindow(s_gb);
+	/*if (s_gb->gb_io.lcd.WindowIsOn == 1)
+		renderingWindow(s_gb);*/
 	if (s_gb->gb_io.lcd.SpriteIsOn == 1)
 		renderingSprite(s_gb);
 	memcpy(pixels, s_gb->gb_gpu.pixels, 160 * 144 * 4);
@@ -270,8 +223,7 @@ void rendering(struct s_gb *s_gb)
 void initGpu(struct s_gb *s_gb)
 {
 	s_gb->gb_gpu.scanline = 0;
-	s_gb->gb_gpu.scrollX = 0;
-	s_gb->gb_gpu.scrollY = 0;
+	
 	s_gb->gb_gpu.tick = 0;
 }
 
@@ -301,10 +253,7 @@ void updateGpu(struct s_gb *s_gb)
 
 	s_gb->gb_gpu.tick += (s_gb->gb_cpu.totalTick - lastTick); //FOR TEST !!! - lastTick;
 	lastTick = s_gb->gb_cpu.totalTick;
-	//setLcdStatus();
 
-	//if (s_gb->gb_cpu.totalTick > 10000000)
-	//	printf("s_gb->gb_cpu.totalTick %d\n", s_gb->gb_cpu.totalTick);
 	switch (s_gb->gb_gpu.gpuMode)
 	{
 	case HBLANK:

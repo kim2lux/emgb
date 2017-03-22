@@ -559,13 +559,8 @@ void	pop_af(struct s_gb *s_gb) { s_gb->gb_register.af = pop16(s_gb);}
 void push16(unsigned short value, struct s_gb *s_gb)
 {
 	s_gb->gb_cpu.totalTick += 16;
-#ifdef GB_DEBUG
-	//prvoidf("push 16bit  %x stack povoider %x\n", value, s_gb->gb_register.sp);
-#endif
 	s_gb->gb_register.sp -= 2;
 	write16bitToAddr(s_gb->gb_register.sp, value, s_gb);
-
-	//getchar();
 }
 
 void push_de(struct s_gb *s_gb) { push16(s_gb->gb_register.de, s_gb); }
@@ -898,7 +893,6 @@ void ld_hl_sp_8(struct s_gb *s_gb)
 
 void daa(struct s_gb *s_gb)
 {
-	RDBG(s_gb);
 	unsigned short s = s_gb->gb_register.a;
 	s_gb->gb_cpu.totalTick += 4;
 	if (NEG_FLAG) {
@@ -917,7 +911,6 @@ void daa(struct s_gb *s_gb)
 	else SET_ZERO();
 
 	if (s >= 0x100) SET_CARRY();
-	RDBG(s_gb);
 }
 
 void ld_addr_sp(struct s_gb *s_gb)

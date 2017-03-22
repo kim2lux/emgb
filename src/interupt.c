@@ -41,7 +41,7 @@ void serial(struct s_gb * gb_s)
 
 void timer(struct s_gb * gb_s)
 {
-	debug(gb_s->gb_rom);
+	debug(gb_s);
 	gb_s->gb_interrupts.interMaster = 0;
 	gb_s->gb_cpu.totalTick += 12;
 	gb_s->gb_register.sp -= 2;

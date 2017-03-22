@@ -44,10 +44,13 @@ void	RDBG(struct s_gb *s_gb)
 
 	displayStack(s_gb);
 	printf("----end-----");
-	getchar();
 }
 
-void debug(struct s_rom *tmprom)
+void debug(struct s_gb *s_gb)
 {
-  printf("%d\n", tmprom->size);
+	if (s_gb->gb_register.bc == 0x1200)
+	{ 
+		RDBG(s_gb);
+	//	getchar();
+	}
 }

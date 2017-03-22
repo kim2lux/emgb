@@ -16,6 +16,7 @@
 
 //main struct
 
+
 struct						s_gb
 {
 	unsigned char			running;
@@ -32,11 +33,16 @@ struct						s_gb
 
 void	initRegister(struct s_gb *s_gb);
 void	gb(char *fileName);
-void	debug(struct s_rom *tmprom);
+void	debug(struct s_gb *tmprom);
 void	check_neg(unsigned char value, struct s_gb *s_gb);
 void	check_zero(unsigned char value, struct s_gb *s_gb);
 void	RDBG(struct s_gb *s_gb);
 void	displayStack(struct s_gb *s_gb);
+
+
+void	seeu(struct s_gb *s_gb); //leaving
+struct	s_gb	*initGb(char *fileName); //init
+void	initRegister(struct s_gb *s_gb);
 
 #define CLOCKSPEED 4194304
 

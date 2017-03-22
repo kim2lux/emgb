@@ -7,7 +7,7 @@ int loadRom(char *romfile, struct s_gb *gb)
 	gb->gb_rom = malloc(sizeof(struct s_rom));
 	SDL_RWops *rw = SDL_RWFromFile(romfile, "rb");
 	if (rw == NULL)
-		DBG("Cannot open rom file");
+		ERR("Cannot open rom file");
 	gb->gb_rom->size = (unsigned int)SDL_RWsize(rw);
 	//printf("rom size = %d\n", s_rom->size);
 	gb->gb_rom->rom = malloc(gb->gb_rom->size * sizeof(char));

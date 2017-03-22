@@ -1,6 +1,10 @@
 #ifndef GB_GPU
 #define GB_GPU
 
+#include "io.h"
+#include "GB.h"
+
+
 void rendering(struct s_gb *s_gb);
 void initGpu(struct s_gb *s_gb);
 char lcdIsEnable(unsigned char lcdc);
@@ -22,8 +26,6 @@ enum gpuMode {
 struct				s_gpu
 {
 	unsigned char	scanline;
-	unsigned char	scrollX;
-	unsigned char	scrollY;
 	unsigned int	tick;
 	SDL_Window		*window;
 	SDL_Surface		*screenSurface;
@@ -40,5 +42,6 @@ struct				s_gpu
 	SDL_Event		event;
 	enum gpuMode	gpuMode;
 };
+
 
 #endif

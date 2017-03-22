@@ -2,8 +2,9 @@
 
 int main(int ac, char **av)
 {
-	if (ac != 2)
-		ERR("Parameter error: ./gb [rom.gb]");
-	gb(av[1]);
+	{
+		char * rompath = "C:\\proj\\GB_test\\emgb\\roms\\0.gb";
+		gb(rompath);
+	}
 	return (0);
 }
