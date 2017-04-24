@@ -5,7 +5,7 @@ project(gb)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 find_package(SDL2 REQUIRED)
-add_definitions("-D FREEGLUT_STATIC")
+
 
 
 include_directories(${SDL2_INCLUDE_DIR}  ${OPENGL_INCLUDE_DIR} ./include)
@@ -20,7 +20,7 @@ endif (UNIX)
 add_executable(gb ${SOURCE_FILES})
 
 if (WIN32 OR MSYS OR MINGW )
-    target_link_libraries(gb ${SDL2_LIBRARY} freeglut_static  opengl32 glew32 glu32 m dinput8 dxguid dxerr8 user32 gdi32 winmm imm32 ole32 oleaut32 shell32 version uuid)
+    target_link_libraries(gb -lmingw32 -lSDL2main -lSDL2  opengl32  glu32 m dinput8 dxguid dxerr8 user32 gdi32 winmm imm32 ole32 oleaut32 shell32 version uuid)
 endif (WIN32 OR MSYS OR MINGW )
 
 if (UNIX)  
