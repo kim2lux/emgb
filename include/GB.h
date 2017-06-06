@@ -33,6 +33,7 @@ struct						s_gb
 	unsigned char			stopdbg;
 };
 
+void	 gb(char *fileName);
 void	initRegister(struct s_gb *s_gb);
 void	debug(struct s_gb *tmprom);
 void	check_neg(unsigned char value, struct s_gb *s_gb);
