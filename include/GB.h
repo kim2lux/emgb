@@ -29,10 +29,11 @@ struct						s_gb
 	struct s_memory			gb_mem;
 	struct s_joypad			gb_pad;
 	struct s_cpu			gb_cpu;
+
+	unsigned char			stopdbg;
 };
 
 void	initRegister(struct s_gb *s_gb);
-void	gb(char *fileName);
 void	debug(struct s_gb *tmprom);
 void	check_neg(unsigned char value, struct s_gb *s_gb);
 void	check_zero(unsigned char value, struct s_gb *s_gb);
@@ -47,8 +48,6 @@ void	initRegister(struct s_gb *s_gb);
 #define CLOCKSPEED 4194304
 
 
-
-FILE *fp;
 
 #define ERR(s)  {printf("ERR:: %s ---- %s line %d\n", s, __FILE__, __LINE__); exit(0); }
 #define DBG(s)	{printf("DBG:: %s ---- %s line %d\n", s, __FILE__, __LINE__); }

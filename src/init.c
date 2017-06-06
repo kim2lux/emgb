@@ -1,5 +1,7 @@
 #include "GB.h"
 
+
+
 struct s_gb	*initGb(char *fileName)
 {
 	struct s_gb		*s_gb = NULL;
