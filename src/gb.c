@@ -1,6 +1,6 @@
 #include "GB.h"
 
-#define IMDBG
+#define IMDBG //DELETE THIS LINE TO UNABLE IMGUI dependency
 // main loop function
 // retrieve opcode & execute it. update gpu interupt & timer
 int imgui(void *s_gb);
