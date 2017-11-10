@@ -2,11 +2,11 @@
 
 void	seeu(struct s_gb *s_gb)
 {
-	SDL_DestroyWindow(s_gb->gb_gpu.window_d);
+	/* SDL_DestroyWindow(s_gb->gb_gpu.window_d); */
 	SDL_DestroyWindow(s_gb->gb_gpu.window);
 	free(s_gb->gb_rom->rom);
 	free(s_gb->gb_rom);
-	free(s_gb->gb_gpu.pixels_d);
+	/* free(s_gb->gb_gpu.pixels_d); */
 	free(s_gb->gb_gpu.pixels);
 	free(s_gb);
 
@@ -54,11 +54,11 @@ void	RDBG(struct s_gb *s_gb)
 	printf("flag Substraction %x\n", (s_gb->gb_register.f >> 6) & 1);
 	printf("flag Half-carry %x\n", (s_gb->gb_register.f >> 5) & 1);
 	printf("flag  Carry %x\n", (s_gb->gb_register.f >> 4) & 1);
-
+	*/
 	displayStack(s_gb);
-	printf("----end-----");*/
-	printf("DEBUG\n");
-	getchar();
+	/* printf("----end-----"); */
+	/* printf("DEBUG\n"); */
+	/* getchar(); */
 }
 
 void debug(struct s_gb *s_gb)

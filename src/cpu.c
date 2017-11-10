@@ -1046,7 +1046,7 @@ void ld_ff_c_a(struct s_gb *s_gb)
 void initCpu(struct s_gb * gb_s)
 {
 	struct s_cpu_z80 cpu_t[256] = {
-		{ 0x00, "NOP", nop, 0 },
+		{ .opcode = 0x00, .value = "NOP", .func = nop, .size = 0 },
 		{ 0x01, "ld bc value", ld_bc_val_16, 2 },
 		{ 0x02, "save a to (bc) addr", ld_bc_addr_a, 0 },
 		{ 0x03, "inc_bc", inc_bc, 0},

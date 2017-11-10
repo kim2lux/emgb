@@ -7,10 +7,9 @@ set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 find_package(SDL2 REQUIRED)
 
 
-
 include_directories(${SDL2_INCLUDE_DIR}  ${OPENGL_INCLUDE_DIR} ./include)
 
-set(SOURCE_FILES src/main.c src/rom.c src/gb.c src/cpu.c src/gpu.c src/memory.c src/io.c src/cb.c src/interupt.c src/debug.c src/joypad.c src/timer.c src/background.c src/seeu.c src/init.c)
+set(SOURCE_FILES src/main.c src/rom.c src/gb.c src/cpu.c src/gpu.c src/memory.c src/io.c src/cb.c src/interupt.c  src/joypad.c src/timer.c src/background.c src/seeu.c src/init.c)
 
 if (UNIX)
   SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -pedantic -Wextra")
