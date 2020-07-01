@@ -1,6 +1,5 @@
-#include "GB.h"
-#include "cpu.h"
 
+#if 0
 
 unsigned short read16(struct s_gb *s_gb)
 {
@@ -1318,3 +1317,4 @@ void initCpu(struct s_gb * gb_s)
 
 	memcpy(&(gb_s->gb_cpu.gb_cpu_z80), &cpu_t, sizeof(cpu_t));
 }
+#endif

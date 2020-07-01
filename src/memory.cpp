@@ -185,7 +185,6 @@ uint8_t Memory::memoperation(uint16_t addr, int8_t value)
 {
     if (addr < 0x8000)
     {
-        //		s_rom->rom[addr] += value;
         printf("error memoperation on ROM space\n");
         exit(-2);
         return cart_.rom_[addr];

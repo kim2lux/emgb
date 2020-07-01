@@ -18,7 +18,7 @@ public:
 	Cartridge & cart_;
 
 	int write8bit(uint16_t addr, uint8_t value);
-	uint8_t memoperation(uint16_t addr, signed char value);
+	uint8_t memoperation(uint16_t addr, int8_t value);
 	void mcbHandleBanking(uint16_t addr, uint8_t value);
 	uint8_t read8bit(uint16_t addr);
 	uint16_t read16bit(uint16_t addr);
