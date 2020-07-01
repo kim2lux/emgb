@@ -16,7 +16,8 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(SOURCE_FILES src/main.cpp src/rom.cpp src/memory.cpp src/joypad.cpp
-                 src/cpu/ld.cpp src/cpu/cpu.cpp src/cpu/inc.cpp)
+                 src/cpu/ld.cpp src/cpu/cpu.cpp src/cpu/inc.cpp src/cpu/rotate.cpp
+                 src/cpu/dec.cpp)
 
 set_source_files_properties(src/cpu.cpp PROPERTIES LANGUAGE CXX)
 set_source_files_properties(src/rom.cpp PROPERTIES LANGUAGE CXX)

@@ -28,6 +28,99 @@ protected:
     }
 };
 
+TEST_F(myTestFixture1, ld8)
+{
+    cpu.regs_.b = 0x20;
+    cpu.getMmu().write8bit(0x8000, 0x30);
+    cpu.regs_.pc = 0x8000;
+    std::find_if(cpu.opcodes_.begin(), cpu.opcodes_.end(), [](const OpcodeZ80 &opcode) {
+        return opcode.opcode == 0x06;
+    })->opFunc();
+
+    std::find_if(cpu.opcodes_.begin(), cpu.opcodes_.end(), [](const OpcodeZ80 &opcode) {
+        return opcode.opcode == 0x16;
+    })->opFunc();
+
+    std::find_if(cpu.opcodes_.begin(), cpu.opcodes_.end(), [](const OpcodeZ80 &opcode) {
+        return opcode.opcode == 0x26;
+    })->opFunc();
+
+    ASSERT_EQ(cpu.regs_.h, 0x30);
+    cpu.regs_.hl = 0x8010;
+    std::find_if(cpu.opcodes_.begin(), cpu.opcodes_.end(), [](const OpcodeZ80 &opcode) {
+        return opcode.opcode == 0x36;
+    })->opFunc();
+
+    ASSERT_EQ(cpu.regs_.b, 0x30);
+    ASSERT_EQ(cpu.regs_.d, 0x30);
+    ASSERT_EQ(cpu.getMmu().read8bit(cpu.regs_.hl), 0x30);
+}
+
+TEST_F(myTestFixture1, rotate)
+{
+    cpu.regs_.a = 0x01;
+    std::find_if(cpu.opcodes_.begin(), cpu.opcodes_.end(), [](const OpcodeZ80 &opcode) {
+        return opcode.opcode == 0x07;
+    })->opFunc();
+    ASSERT_EQ(cpu.regs_.a, 2);
+    cpu.regs_.a = 0x80;
+    cpu.clear_flags();
+    ASSERT_EQ(cpu.isFlagSet(Flag::CARRY_FLAG), false);
+    std::find_if(cpu.opcodes_.begin(), cpu.opcodes_.end(), [&](const OpcodeZ80 &opcode) {
+        return opcode.opcode == 0x07;
+    })->opFunc();
+    ASSERT_EQ(cpu.regs_.a, 1);
+    ASSERT_EQ(cpu.isFlagSet(Flag::CARRY_FLAG), true);
+
+    cpu.regs_.a = 0x80;
+    cpu.clear_flags();
+    ASSERT_EQ(cpu.isFlagSet(Flag::CARRY_FLAG), false);
+    std::find_if(cpu.opcodes_.begin(), cpu.opcodes_.end(), [&](const OpcodeZ80 &opcode) {
+        return opcode.opcode == 0x17;
+    })->opFunc();
+    ASSERT_NE(cpu.regs_.a, 1);
+    ASSERT_EQ(cpu.isFlagSet(Flag::CARRY_FLAG), true);
+
+    cpu.regs_.a = 0x10;
+    cpu.set_carry_flag();
+    ASSERT_EQ(cpu.isFlagSet(Flag::CARRY_FLAG), true);
+    std::find_if(cpu.opcodes_.begin(), cpu.opcodes_.end(), [&](const OpcodeZ80 &opcode) {
+        return opcode.opcode == 0x17;
+    })->opFunc();
+    ASSERT_EQ(cpu.regs_.a, 0x21);
+    ASSERT_EQ(cpu.isFlagSet(Flag::CARRY_FLAG), false);
+
+}
+
+
+TEST_F(myTestFixture1, dec)
+{
+    cpu.regs_.b = 0x01;
+    std::find_if(cpu.opcodes_.begin(), cpu.opcodes_.end(), [](const OpcodeZ80 &opcode) {
+        return opcode.opcode == 0x05;
+    })->opFunc();
+    ASSERT_EQ(cpu.regs_.b, 0x00);
+
+    cpu.regs_.d = 0x0d;
+    std::find_if(cpu.opcodes_.begin(), cpu.opcodes_.end(), [](const OpcodeZ80 &opcode) {
+        return opcode.opcode == 0x15;
+    })->opFunc();
+    ASSERT_EQ(cpu.regs_.d, 0x0c);
+
+    cpu.regs_.h = 0x0d;
+    std::find_if(cpu.opcodes_.begin(), cpu.opcodes_.end(), [](const OpcodeZ80 &opcode) {
+        return opcode.opcode == 0x25;
+    })->opFunc();
+    ASSERT_EQ(cpu.regs_.h, 0x0c);
+
+    cpu.regs_.hl = 0xc000;
+    cpu.getMmu().write16bitToAddr(cpu.regs_.hl, 0x4003);
+    std::find_if(cpu.opcodes_.begin(), cpu.opcodes_.end(), [](const OpcodeZ80 &opcode) {
+        return opcode.opcode == 0x35;
+    })->opFunc();
+    ASSERT_EQ(cpu.getMmu().read16bit(cpu.regs_.hl), 0x4002);
+}
+
 TEST_F(myTestFixture1, inc)
 {
     std::find_if(cpu.opcodes_.begin(), cpu.opcodes_.end(), [](const OpcodeZ80 &opcode) {

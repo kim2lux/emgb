@@ -95,9 +95,4 @@ struct s_cpu
 #define SET_CARRY() s_gb->gb_register.f |= 0x10
 #define CLEAR_CARRY() s_gb->gb_register.f &= ~(0x10)
 
-#define ZERO_FLAG (s_gb->gb_register.f & 0x80)
-#define CARRY_FLAG (s_gb->gb_register.f & 0x10)
-#define NEG_FLAG (s_gb->gb_register.f & 0x40)
-#define HALFC_FLAG (s_gb->gb_register.f & 0x20)
-
 #endif

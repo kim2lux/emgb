@@ -15,6 +15,13 @@ struct OpcodeZ80
     uint8_t size;
 };
 
+enum Flag: uint8_t {
+    CARRY_FLAG = 0,
+    HALFC_FLAG = 1,
+    ZERO_FLAG = 2,
+    NEG_FLAG = 3
+};
+
 class Z80Cpu
 {
 public:
@@ -38,12 +45,14 @@ public:
     void set_carry_flag() { regs_.f |= 0x10; }
     void clear_carry_flag() { regs_.f &= ~(0x10); }
 
+    void clear_flags() { regs_.f = 0; }
+    bool isFlagSet(Flag f);
+
 private:
     void initRegister();
-
-    // decrement instruction
-    void dec_a();
-    uint8_t dec8(uint8_t &value);
+    void nop_0x00();
+    void daa_0x27();
+    void scf_0x36();
 
     // load instruction
     uint16_t ld_16(uint16_t addr);
@@ -57,6 +66,12 @@ private:
     void ld_a_to_hl_addr_0x22();
     void ld_a_to_hl_addr_0x32();
 
+    uint8_t ld_8(uint16_t addr); 
+    void ld_8_to_b_0x06();
+    void ld_8_to_d_0x16();
+    void ld_8_to_h_0x26();
+    void ld_8_to_hl_addr_0x36();
+
     // inc instruction
 
     void inc_bc_0x03();
@@ -69,7 +84,17 @@ private:
     void inc_d_0x14();
     void inc_h_0x24();
     void inc_hl_addr_0x34();
-    void nop_0x00();
+
+    // dec instruction
+    void dec8BitRegister(uint8_t &reg);
+    void dec_b_0x05();
+    void dec_d_0x15();
+    void dec_h_0x25();
+    void dec_hl_addr_0x35();
+
+    // rotate
+    void rlca_0x07();
+    void rla_0x17();
 
     Memory &mmu_;
 };

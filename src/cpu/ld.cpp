@@ -3,7 +3,7 @@
 uint16_t Z80Cpu::ld_16(uint16_t addr)
 {
     tickCount_ += 12;
-    return mmu_.read16bit(regs_.pc);
+    return mmu_.read16bit(addr);
 }
 
 void Z80Cpu::ld_16_to_bc_0x01()
@@ -50,4 +50,30 @@ void Z80Cpu::ld_a_to_hl_addr_0x32()
     tickCount_ += 8;
     mmu_.write8bit(regs_.hl, regs_.a);
     regs_.hl -= 1;
+}
+
+uint8_t Z80Cpu::ld_8(uint16_t addr)
+{
+    tickCount_ += 8;
+    return mmu_.read8bit(addr);
+}
+
+void Z80Cpu::ld_8_to_b_0x06()
+{
+    regs_.b = ld_8(regs_.pc);
+}
+
+void Z80Cpu::ld_8_to_d_0x16()
+{
+    regs_.d = ld_8(regs_.pc);
+}
+
+void Z80Cpu::ld_8_to_h_0x26()
+{
+    regs_.h = ld_8(regs_.pc);
+}
+
+void Z80Cpu::ld_8_to_hl_addr_0x36() {
+    tickCount_ += 12;
+    mmu_.write8bit(regs_.hl, mmu_.read8bit(regs_.pc));
 }
