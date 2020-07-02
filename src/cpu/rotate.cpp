@@ -2,6 +2,7 @@
 
 void Z80Cpu::nop_0x00()
 {
+	tickCount_ += 4;
 }
 
 void Z80Cpu::daa_0x27() 
@@ -71,6 +72,46 @@ void Z80Cpu::rla_0x17() {
     }
     clear_flags();
     if (bit != 0x00) {
+        set_carry_flag();
+    }
+}
+
+void Z80Cpu::rrca_0x0f()
+{
+    tickCount_ += 4;
+
+    uint8_t bit = regs_.a & 0x01;
+    regs_.a >>= 1;
+
+    clear_flags();
+    if (bit != 0x00)
+    {
+        set_carry_flag();
+        regs_.a |= 0x80;
+    }
+    else
+    {
+        regs_.a &= ~(0x80);
+    }
+}
+
+void Z80Cpu::rra_0x1f()
+{
+    tickCount_ += 4;
+
+    uint8_t bit = regs_.a & 0x01;
+    regs_.a >>= 1;
+    if (isFlagSet(Flag::CARRY_FLAG))
+    {
+        regs_.a |= 0x80;
+    }
+    else
+    {
+        regs_.a &= ~(0x80);
+    }
+    clear_flags();
+    if (bit != 0x00)
+    {
         set_carry_flag();
     }
 }

@@ -70,7 +70,6 @@ struct s_register
 
   unsigned short pc;
   unsigned short sp;
-  //unsigned char	flags;
 };
 
 struct s_cpu

@@ -1217,6 +1217,7 @@ void initCpu(struct s_gb * gb_s)
 		{ 0x9d, "sbc", sbc_l, 0 },
 		{ 0x9e, "sbc", sbc_hl, 0 },
 		{ 0x9f, "sbc_a_a", sbc_a, 0},
+		
 		{ 0xa0, "and b", and_b, 0},
 		{ 0xa1, "and c", and_c, 0 },
 		{ 0xa2, "and d", and_d, 0 },

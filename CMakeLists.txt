@@ -15,9 +15,23 @@ add_subdirectory(lib/googletest)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(SOURCE_FILES src/main.cpp src/rom.cpp src/memory.cpp src/joypad.cpp
-                 src/cpu/ld.cpp src/cpu/cpu.cpp src/cpu/inc.cpp src/cpu/rotate.cpp
-                 src/cpu/dec.cpp)
+set(SOURCE_FILES
+    src/main.cpp
+    src/rom.cpp
+    src/memory.cpp
+    src/joypad.cpp
+    src/cpu/ld.cpp
+    src/cpu/cpu.cpp
+    src/cpu/inc.cpp
+    src/cpu/rotate.cpp
+    src/cpu/dec.cpp
+    src/cpu/add.cpp
+    src/cpu/sbc.cpp
+    src/cpu/sub.cpp
+    src/cpu/adc.cpp
+    src/cpu/jmp.cpp
+    src/cpu/stack.cpp
+    src/cpu/and.cpp)
 
 set_source_files_properties(src/cpu.cpp PROPERTIES LANGUAGE CXX)
 set_source_files_properties(src/rom.cpp PROPERTIES LANGUAGE CXX)

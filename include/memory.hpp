@@ -25,4 +25,8 @@ public:
 	void write16bitToAddr(uint16_t addr, uint16_t value);
 	void call_addr_16();
 	void memoryInit();
+
+	uint16_t pop16(uint16_t &stack);
+	void push16(uint16_t &stack, uint16_t value);
+
 };

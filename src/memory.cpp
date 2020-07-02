@@ -4,6 +4,23 @@
 static uint8_t MCB_romBanking = 1;
 static uint8_t romBankingFlag = 0;
 
+void Memory::push16(uint16_t &stackPtr, uint16_t value)
+{
+    write16bitToAddr(stackPtr, value);
+    stackPtr -= 2;
+}
+
+
+uint16_t Memory::pop16(uint16_t &stackPtr)
+{
+	uint16_t value;
+
+	value = read16bit(stackPtr);
+    stackPtr += 2;
+
+	return (value);
+}
+
 void Memory::write16bitToAddr(uint16_t addr, uint16_t value)
 {
     write8bit(addr, (uint8_t)value & 0x00ff);
