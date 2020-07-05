@@ -7,7 +7,7 @@ project(gameboy VERSION 1.1.0)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 find_package(SDL2 REQUIRED)
-
+find_package(OpenGL REQUIRED)
 include_directories(${SDL2_INCLUDE_DIR} ${OPENGL_INCLUDE_DIR} ./include)
 
 add_subdirectory(test)
@@ -31,13 +31,22 @@ set(SOURCE_FILES
     src/cpu/adc.cpp
     src/cpu/jmp.cpp
     src/cpu/stack.cpp
+    src/cpu/ctrl.cpp
+    src/cpu/rst.cpp
+    src/cb.cpp
+    src/debug.cpp
+    src/imgui/imgui.cpp
+    src/imgui/imgui_demo.cpp
+    src/imgui/imgui_draw.cpp
+    src/imgui/imgui_impl_sdl.cpp
+    src/debug.cpp
     src/cpu/and.cpp)
 
 set_source_files_properties(src/cpu.cpp PROPERTIES LANGUAGE CXX)
 set_source_files_properties(src/rom.cpp PROPERTIES LANGUAGE CXX)
 
 if(UNIX)
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -pedantic -Wextra")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -Wall -Wpedantic -Wextra")
 endif(UNIX)
 
 add_executable(gb ${SOURCE_FILES})
@@ -71,5 +80,5 @@ endif(
   OR MINGW)
 
 if(UNIX)
-  target_link_libraries(gb ${SDL2_LIBRARY})
+  target_link_libraries(gb ${SDL2_LIBRARY} -pthread -lglut -lGL -lGLU -lGLEW )
 endif(UNIX)

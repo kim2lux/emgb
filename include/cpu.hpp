@@ -31,9 +31,11 @@ public:
     s_register regs_;
     uint32_t tickCount_;
     std::vector<OpcodeZ80> opcodes_;
-    bool jmp_;
-    bool running_;
+    bool fjmp_;
+    bool running_= true;
     bool halt_ = false;
+    bool ime_ = false;
+    
 
     void set_zero_flag() { regs_.f |= 0x80; }
     void clear_zero_flag() { regs_.f &= ~(0x80); }
@@ -52,30 +54,60 @@ public:
 
 protected:
     void initRegister();
+
     void nop_0x00();
+    void no_operation() {
+        ;
+    }
+
+    // external
+    void extern_0xcb();
+    //rst instruction
+    void rst(const uint16_t addr);
+    void rst_0_0xc7();
+    void rst_10_0xd7();
+    void rst_20_0xe7();
+    void rst_30_0xf7();
+
+    void rst_8_0xcf();
+    void rst_18_0xdf();
+    void rst_28_0xef();
+    void rst_38_0xff();
+
+
+    // ctrl instruction
     void daa_0x27();
     void scf_0x37();
     void stop();
+    void halt_proc();
+    void ime_di0xf3();
+    void ei_0xfb();
+
+    // rotate instruction
     void rrca_0x0f();
     void rra_0x1f();
     void cpl_0x2f();
     void ccf_0x3f();
-    void halt_proc();
-    void pop_bc();
-    void pop_de();
-    void pop_hl();
-    void pop_af();
-    void push_bc();
-    void push_de();
-    void push_hl();
-    void push_af();
+
+    // stack instruction
+    void pop_bc0xc1();
+    void pop_de0xd1();
+    void pop_hl0xe1();
+    void push_af0xf5();
+    void push_bc0xc5();
+    void push_de0xd5();
+    void push_hl0xe5();
+    void pop_af0xf1();
 
     // load instruction
-
-    void ldd_addr_a_8();
-    void ldh_a_val_8();
-    void ld_a_to_c();
-    void ld_addr_c_to_a();
+    void ldd_addr_a_80xe0();
+    void ldh_a_val_80xf0();
+    void ld_a_to_c0xe2();
+    void ld_addr_c_to_a0xf2();
+    void ld_hl_sp_r_0xf8();
+    void ld_sp_hl_0xf9();
+    void ld_a_16_0xfa();
+    void ld_a_addr_0xea();
 
     uint16_t ld_16(uint16_t addr);
     void ld_16_to_bc_0x01();
@@ -190,6 +222,8 @@ protected:
     void add_h();
     void add_l();
     void add_hl();
+    void add_a_8_c6();
+    void add_sp_r_0xe8();
 
     // sbc instruction
     void sbc8bit(uint8_t &reg, uint8_t v);
@@ -201,6 +235,10 @@ protected:
     void sbc_h();
     void sbc_l();
     void sbc_hl();
+    void sbc_a_8();
+    void sbc_a_8_de();
+
+
 
     // or instruction
     void or8bit(uint8_t &reg, uint8_t v);
@@ -212,6 +250,8 @@ protected:
     void or_h();
     void or_l();
     void or_hl();
+    void or_a_8_f6();
+
 
     // cp instruction
     void cp8bit(uint8_t &reg, uint8_t v);
@@ -223,6 +263,8 @@ protected:
     void cp_h();
     void cp_l();
     void cp_hl();
+    void cp_a_8_fe();
+
 
     // xor instruction
     void xor8bit(uint8_t &reg, uint8_t v);
@@ -234,6 +276,7 @@ protected:
     void xor_h();
     void xor_l();
     void xor_hl();
+    void xor_a_8_ee();
 
     // and instruction
     void and8bit(uint8_t &reg, uint8_t v);
@@ -245,7 +288,7 @@ protected:
     void and_h();
     void and_l();
     void and_hl();
-
+    void and_a_8_e6();
 
     // sub instruction
     void sub8bit(uint8_t &reg, uint8_t v);
@@ -257,9 +300,11 @@ protected:
     void sub_h();
     void sub_l();
     void sub_hl();
+    void sub_a_8_d6();
+
 
     // adc instruction
-    void adc8Bit(uint8_t &reg, uint8_t v);
+    void adc8bit(uint8_t &reg, uint8_t v);
     void adc_a();
     void adc_b();
     void adc_c();
@@ -268,10 +313,9 @@ protected:
     void adc_h();
     void adc_l();
     void adc_hl();
-
+    void adc_a_8_ce();
 
     // inc instruction
-
     void inc_bc_0x03();
     void inc_de_0x13();
     void inc_hl_0x23();
@@ -316,14 +360,23 @@ protected:
     void jmp_8_if_not_zero_0x20();
     void jmp_8_if_not_carry_0x30();
 
-    void ret_nz();
-    void ret_nc();
-    void ret_z();
-    void ret_c();
-    void jmp_nz();
-    void jmp_nc();
-    void jmp_z();
-    void jmp_c();
+    void ret_nz0xc0();
+    void ret_nc0xd0();
+    void ret_z0xc8();
+    void ret_c0xd8();
+    void ret_0xc9();
+    void reti_0xd9();
+    void jmp_nz0xc2();
+    void jmp_nc0xd2();
+    void jmp_z0xca();
+    void jmp_c0xda();
+    void jmp_160xc3();
+    void jmp_hl_0xe9();
+    void call_nz_16_0xc4();
+    void call_nc_16_0xd4();
+    void call_z_16_0xcc();
+    void call_c_16_0xdc();
+    void call_16_0xcd();
 
     Memory &mmu_;
 };

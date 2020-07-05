@@ -15,6 +15,9 @@ struct s_cpu_z80
 
 #pragma pack(push, 1)
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+
 struct s_register
 {
   struct
@@ -71,7 +74,7 @@ struct s_register
   unsigned short pc;
   unsigned short sp;
 };
-
+#pragma GCC diagnostic pop
 struct s_cpu
 {
   struct s_cpu_z80 gb_cpu_z80[256];
@@ -82,16 +85,16 @@ struct s_cpu
 
 #pragma pack(pop)
 
-#define SET_ZERO() s_gb->gb_register.f |= 0x80
-#define CLEAR_ZERO() s_gb->gb_register.f &= ~(0x80)
+#define SET_ZERO() cpu.regs_.f |= 0x80
+#define CLEAR_ZERO() cpu.regs_.f &= ~(0x80)
 
-#define SET_NEG() s_gb->gb_register.f |= 0x40
-#define CLEAR_NEG() s_gb->gb_register.f &= ~(0x40)
+#define SET_NEG() cpu.regs_.f |= 0x40
+#define CLEAR_NEG() cpu.regs_.f &= ~(0x40)
 
-#define SET_HALFC() s_gb->gb_register.f |= 0x20
-#define CLEAR_HALFC() s_gb->gb_register.f &= ~(0x20)
+#define SET_HALFC() cpu.regs_.f |= 0x20
+#define CLEAR_HALFC() cpu.regs_.f &= ~(0x20)
 
-#define SET_CARRY() s_gb->gb_register.f |= 0x10
-#define CLEAR_CARRY() s_gb->gb_register.f &= ~(0x10)
+#define SET_CARRY() cpu.regs_.f |= 0x10
+#define CLEAR_CARRY() cpu.regs_.f &= ~(0x10)
 
 #endif

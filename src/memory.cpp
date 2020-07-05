@@ -1,13 +1,14 @@
 #include "GB.h"
 #include "memory.hpp"
+#include <iostream>
 
 static uint8_t MCB_romBanking = 1;
 static uint8_t romBankingFlag = 0;
 
 void Memory::push16(uint16_t &stackPtr, uint16_t value)
 {
-    write16bitToAddr(stackPtr, value);
     stackPtr -= 2;
+    write16bitToAddr(stackPtr, value);
 }
 
 
@@ -39,10 +40,10 @@ uint16_t Memory::read16bit(uint16_t addr)
 
 uint8_t Memory::read8bit(uint16_t addr)
 {
-
     if (addr == 0xff44)
     {
-        //return s_gb->gb_gpu.scanline;
+        testScanline_ += 1;
+        return testScanline_;
     }
     else if (addr < 0x4000)
     {
@@ -79,6 +80,7 @@ uint8_t Memory::read8bit(uint16_t addr)
     {
         if (addr == 0xff00)
         {
+            return (0xef);
             //return (padState(s_gb));
         }
         if (addr == 0xff04)
@@ -91,7 +93,7 @@ uint8_t Memory::read8bit(uint16_t addr)
         }
         if (addr == 0xff41)
         {
-            printf("reading lcd stat\n");
+            //printf("reading lcd stat\n");
         }
         return io_ports_[addr - 0xFF00];
     }
@@ -101,6 +103,7 @@ uint8_t Memory::read8bit(uint16_t addr)
     }
     else if (addr == 0xffff)
     {
+        return interupt_;
         //return (s_gb->gb_interrupts.interEnable);
     }
     printf("read error : addr %x\n", addr);
@@ -151,6 +154,7 @@ int Memory::write8bit(uint16_t addr, uint8_t value)
     }
     else if (addr >= 0x8000 && addr < 0xA000)
     {
+        //std::cout << "writing to sram: " << std::hex << (int32_t) value << std::endl;
         vram_[addr - 0x8000] = value;
         return 0;
     }
@@ -176,11 +180,15 @@ int Memory::write8bit(uint16_t addr, uint8_t value)
     }
     else if (addr >= 0xFF00 && addr < 0xFF80)
     {
-        io_ports_[addr - 0xFF00] = value;
-        if (addr == 0xff41)
-        {
-            printf("writing lcd stat %x\n", value);
+        if (addr == 0xff02) {
+            //std::cout << "writing to link:" << (char)value << std::endl;
         }
+
+        if (addr == 0xff01) {
+            std::cout << (char)value << std::endl;
+        }
+        io_ports_[addr - 0xFF00] = value;
+
         //ctrlIo(addr, (uint8_t *)io_ports_);
         return 0;
     }
@@ -191,6 +199,7 @@ int Memory::write8bit(uint16_t addr, uint8_t value)
     }
     else if (addr >= 0xffff)
     {
+        interupt_ = value;
         //s_gb->gb_interrupts.interEnable = value;
         return 0;
     }
@@ -256,9 +265,9 @@ void Memory::memoryInit()
     memset(ram_, 0, 0x2000);
     memset(io_ports_, 0, 0x0080);
 
-    write8bit(0xFF05, 0x00);
-    write8bit(0xFF06, 0x00);
-    write8bit(0xFF07, 0x08);
+    write8bit(0xFF05, 0x00); //tima
+    write8bit(0xFF06, 0x00); //tma
+    write8bit(0xFF07, 0x00); //tac
     write8bit(0xFF10, 0x80);
     write8bit(0xFF11, 0xBF);
     write8bit(0xFF12, 0xF3);
@@ -277,11 +286,11 @@ void Memory::memoryInit()
     write8bit(0xFF24, 0x77);
     write8bit(0xFF25, 0xF3);
     write8bit(0xFF26, 0xF1);
-    write8bit(0xFF40, 0x91);
-    write8bit(0xFF42, 0x00);
-    write8bit(0xFF43, 0x00);
-    write8bit(0xFF45, 0x00);
-    write8bit(0xFF47, 0xFC);
+    write8bit(0xFF40, 0x91); //LCDC
+    write8bit(0xFF42, 0x00); //SCY
+    write8bit(0xFF43, 0x00); //SCX
+    write8bit(0xFF45, 0x00); //LYC
+    write8bit(0xFF47, 0xFC); //BGP
     write8bit(0xFF48, 0xFF);
     write8bit(0xFF49, 0xFF);
     write8bit(0xFF4A, 0x00);

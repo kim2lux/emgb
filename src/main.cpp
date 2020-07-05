@@ -1,6 +1,10 @@
 #include "rom.hpp"
 #include "memory.hpp"
 #include "cpu.hpp"
+#include <thread>
+#include <iostream>
+
+int IMGUI_debugger(Z80Cpu &cpu);
 
 int main(int ac, char **av)
 {
@@ -8,17 +12,5 @@ int main(int ac, char **av)
     cart.initRom(av[1]);
     Memory memory(cart);
     Z80Cpu cpu(memory);
-    uint8_t exec;
-
-    while (cpu.running_)
-    {
-        exec = memory.read8bit(cpu.regs_.pc++);
-        cpu.opcodes_[exec].opFunc();
-        if (cpu.jmp_ == 0)
-            cpu.regs_.pc += cpu.opcodes_[exec].size;
-        cpu.jmp_ = 0;
-        //updateGpu(s_gb);
-        //doInterupt(s_gb);
-        //updateTimer(s_gb);
-    }
+    IMGUI_debugger(cpu);
 }

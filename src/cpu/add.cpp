@@ -90,3 +90,59 @@ void Z80Cpu::add_hl() {
     tickCount_ += 4;
     add8bit(regs_.a, mmu_.read8bit(regs_.hl));
 }
+
+void Z80Cpu::add_a_8_c6() {
+    tickCount_ += 8;
+    add8bit(regs_.a, mmu_.read8bit(regs_.pc));
+}
+
+void Z80Cpu::adc_a_8_ce() {
+    tickCount_ += 8;
+    adc8bit(regs_.a, mmu_.read8bit(regs_.pc));
+}
+
+void Z80Cpu::sub_a_8_d6() {
+    tickCount_ += 8;
+    sub8bit(regs_.a, mmu_.read8bit(regs_.pc));
+}
+
+void Z80Cpu::sbc_a_8_de() {
+    tickCount_ += 8;
+    sbc8bit(regs_.a, mmu_.read8bit(regs_.pc));
+}
+
+void Z80Cpu::and_a_8_e6() {
+    tickCount_ += 8;
+    and8bit(regs_.a, mmu_.read8bit(regs_.pc));
+}
+
+void Z80Cpu::xor_a_8_ee() {
+    tickCount_ += 8;
+    xor8bit(regs_.a, mmu_.read8bit(regs_.pc));
+}
+
+void Z80Cpu::or_a_8_f6() {
+    tickCount_ += 8;
+    or8bit(regs_.a, mmu_.read8bit(regs_.pc));
+}
+
+void Z80Cpu::cp_a_8_fe() {
+    tickCount_ += 8;
+    cp8bit(regs_.a, mmu_.read8bit(regs_.pc));
+}
+
+void Z80Cpu::add_sp_r_0xe8() {
+    tickCount_ += 16;
+    uint8_t res = mmu_.read8bit(regs_.pc);
+
+    clear_flags();
+
+    if (((res & 0xff) + (regs_.sp & 0xff)) > 0xff) {
+        set_carry_flag();
+    }
+    if (((res & 0x0f) + (regs_.sp & 0x0f)) > 0x0f) {
+        set_half_carry_flag();
+    }
+
+    regs_.sp += static_cast<uint16_t>(res);
+}

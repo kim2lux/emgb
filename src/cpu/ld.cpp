@@ -1,21 +1,56 @@
 #include "cpu.hpp"
+#include <iostream>
+void Z80Cpu::ld_sp_hl_0xf9() {
+    tickCount_ += 8;
 
-void Z80Cpu::ldd_addr_a_8() {
-    tickCount_ += 12;
-    mmu_.write8bit(0xff00 + mmu_.read8bit(regs_.pc), regs_.a);
+    regs_.sp = regs_.hl;
 }
 
-void Z80Cpu::ldh_a_val_8() {
+void Z80Cpu::ld_a_16_0xfa() {
+    uint16_t addr = mmu_.read16bit(regs_.pc);
+    regs_.a = mmu_.read8bit(addr);
+    tickCount_ += 16;
+}
+
+void Z80Cpu::ld_a_addr_0xea() {
+    tickCount_ += 16;
+    uint16_t value = mmu_.read16bit(regs_.pc);
+    mmu_.write8bit(value, regs_.a);
+}
+
+void Z80Cpu::ld_hl_sp_r_0xf8() {
+    tickCount_ += 12;
+    char value = mmu_.read8bit(regs_.pc);
+    uint16_t res = regs_.sp + value;
+
+    clear_flags();
+    if (((regs_.sp & res & value) & 0x100) == 0x100) {
+        set_carry_flag();
+    }
+
+    if (((regs_.sp & res & value) & 0x10) == 0x10) {
+        set_half_carry_flag();
+    }
+
+    regs_.hl = res;
+}
+
+void Z80Cpu::ldd_addr_a_80xe0() {
+    tickCount_ += 12;
+    mmu_.write8bit((uint16_t)0xff00 + (uint16_t)mmu_.read8bit(regs_.pc), regs_.a);
+}
+
+void Z80Cpu::ldh_a_val_80xf0() {
     tickCount_ += 12;
     regs_.a = mmu_.read8bit(0xff00 + mmu_.read8bit(regs_.pc));
 }
 
-void Z80Cpu::ld_a_to_c() {
+void Z80Cpu::ld_a_to_c0xe2() {
     tickCount_ += 8;
     mmu_.write8bit(0xff00 + regs_.c, regs_.a);
 }
 
-void Z80Cpu::ld_addr_c_to_a() {
+void Z80Cpu::ld_addr_c_to_a0xf2() {
     tickCount_ += 8;
     regs_.a = mmu_.read16bit(0xff00 + regs_.c);
 }
@@ -97,7 +132,6 @@ void Z80Cpu::ld_8_to_a_0x3e()
 {
     regs_.a = ld_8(regs_.pc);
 }
-
 
 void Z80Cpu::ld_8_to_b_0x06()
 {

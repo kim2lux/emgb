@@ -1,7 +1,7 @@
 #include "cpu.hpp"
 
 
-void Z80Cpu::adc8Bit(uint8_t &reg, uint8_t add) {
+void Z80Cpu::adc8bit(uint8_t &reg, uint8_t add) {
     uint8_t carry = 0x00;
     tickCount_ += 4;
 
@@ -34,32 +34,32 @@ void Z80Cpu::adc8Bit(uint8_t &reg, uint8_t add) {
 }
 
 void Z80Cpu::adc_b() {
-    adc8Bit(regs_.a, regs_.b);
+    adc8bit(regs_.a, regs_.b);
 }
 
 void Z80Cpu::adc_c() {
-    adc8Bit(regs_.a, regs_.c);
+    adc8bit(regs_.a, regs_.c);
 }
 void Z80Cpu::adc_d() {
-    adc8Bit(regs_.a, regs_.d);
+    adc8bit(regs_.a, regs_.d);
 }
 void Z80Cpu::adc_e() {
-    adc8Bit(regs_.a, regs_.e);
+    adc8bit(regs_.a, regs_.e);
 }
 
 void Z80Cpu::adc_h() {
-    adc8Bit(regs_.a, regs_.h);
+    adc8bit(regs_.a, regs_.h);
 }
 
 void Z80Cpu::adc_l() {
-    adc8Bit(regs_.a, regs_.l);
+    adc8bit(regs_.a, regs_.l);
 }
 
 void Z80Cpu::adc_hl() {
     tickCount_ += 4;
-    adc8Bit(regs_.a, mmu_.read8bit(regs_.hl));
+    adc8bit(regs_.a, mmu_.read8bit(regs_.hl));
 }
 
 void Z80Cpu::adc_a() {
-    adc8Bit(regs_.a, regs_.a);
+    adc8bit(regs_.a, regs_.a);
 }

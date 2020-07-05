@@ -6,8 +6,9 @@ class Memory
 {
 public:
     Memory(Cartridge &cart) : cart_(cart) {
-		
+		testScanline_ = 0x89;
 	}
+	uint8_t interupt_ = 0;
 
 	uint8_t sram_[0x2000];
 	uint8_t vram_[0x2000];
@@ -16,6 +17,9 @@ public:
 	uint8_t io_ports_[0x80];
 	uint8_t hram_[0x80];
 	Cartridge & cart_;
+
+	// TO GO GPU
+	uint8_t testScanline_;
 
 	int write8bit(uint16_t addr, uint8_t value);
 	uint8_t memoperation(uint16_t addr, int8_t value);

@@ -84,6 +84,7 @@ void handleEvent(struct s_gb * gb_s)
 		case SDL_QUIT: {
 			printf("see u.\n");
 			gb_s->running = 0;
+			break;
 		}
 		case SDL_KEYDOWN:
 			keyDown(gb_s);

@@ -35,7 +35,7 @@ void Z80Cpu::inc8BitRegister(uint8_t &reg)
     }
     else
     {
-        clear_carry_flag();
+        clear_zero_flag();
     }
 
     if (reg & 0x0f)
@@ -69,40 +69,20 @@ void Z80Cpu::inc_hl_addr_0x34()
     mmu_.memoperation(regs_.hl, 1);
 }
 
-uint8_t Z80Cpu::inc8(uint8_t value)
-{
-    tickCount_ += 4;
-    value += 1;
-    clear_neg_flag();
-    if (value == 0x00) {
-        set_zero_flag();
-    } else {
-        clear_zero_flag();
-    }
-
-    if (value & 0x0f == 0x0f) {
-        set_half_carry_flag();
-    }
-    else {
-        clear_half_carry_flag();
-    }
-    return value;
-}
-
 void Z80Cpu::inc_c_0x0c()
 {
-    regs_.c = inc8(regs_.c);
+    inc8BitRegister(regs_.c);
 }
 
 void Z80Cpu::inc_e_0x1c()
 {
-    regs_.e = inc8(regs_.e);
+    inc8BitRegister(regs_.e);
 }
 void Z80Cpu::inc_l_0x2c()
 {
-    regs_.l = inc8(regs_.l);
+    inc8BitRegister(regs_.l);
 }
 void Z80Cpu::inc_a_0x3c()
 {
-    regs_.a = inc8(regs_.a);
+    inc8BitRegister(regs_.a);
 }

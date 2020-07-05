@@ -4,15 +4,11 @@
 #include <stdio.h>
 #include <SDL.h>
 #include <SDL_opengl.h>
+#include "cpu.hpp"
+#include <iostream>
 
-
-extern "C" {
-	int imgui(void *p_s_gb);
-}
-
-int IMGUI_debugger(void *p_s_gb)
+int IMGUI_debugger(Z80Cpu &cpu)
 {
-	struct s_gb		*s_gb = (struct s_gb *)p_s_gb;
 
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
@@ -23,73 +19,90 @@ int IMGUI_debugger(void *p_s_gb)
 	int res = SDL_GetCurrentDisplayMode(0, &current);
 	if (res != 0)
 		SDL_Log("Could not get display mode for video display #%d: %s", 0, SDL_GetError());
-	SDL_Window *window = SDL_CreateWindow("ImGui SDL2+OpenGL example", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
+	SDL_Window *window = SDL_CreateWindow("ImGui SDL2+OpenGL example", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 500, 500, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
 	SDL_GLContext glcontext = SDL_GL_CreateContext(window);
 
 	// Setup ImGui binding
 	ImGui_ImplSdl_Init(window);
-
-	// Load Fonts
-	// (there is a default font, this is only if you want to change it. see extra_fonts/README.txt for more details)
-	//ImGuiIO& io = ImGui::GetIO();
-	//io.Fonts->AddFontDefault();
-	//io.Fonts->AddFontFromFileTTF("../../extra_fonts/Cousine-Regular.ttf", 15.0f);
-	//io.Fonts->AddFontFromFileTTF("../../extra_fonts/DroidSans.ttf", 16.0f);
-	//io.Fonts->AddFontFromFileTTF("../../extra_fonts/ProggyClean.ttf", 13.0f);
-	//io.Fonts->AddFontFromFileTTF("../../extra_fonts/ProggyTiny.ttf", 10.0f);
-	//io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, NULL, io.Fonts->GetGlyphRangesJapanese());
-
-	bool show_test_window = true;
-	bool show_another_window = false;
 	ImVec4 clear_color = ImColor(114, 144, 154);
 
 	// Main loop
 	bool done = false;
-	while (s_gb->stopdbg != 1)
+	uint8_t exec;
+	SDL_Event event;
+	bool go = false;
+	uint8_t start = 0;
+
+	while (done == false)
 	{
-		SDL_Event event;
-		while (SDL_PollEvent(&event))
+		go = false;
+		if (cpu.regs_.pc == 0xc086)
+		    start = 1;
+		while (go == true && start == 1)
 		{
-			ImGui_ImplSdl_ProcessEvent(&event);
-			if (event.type == SDL_QUIT)
-				done = true;
-		}
-		ImGui_ImplSdl_NewFrame(window);
-		{
-			ImGui::Begin("CPU register state");
-			ImGui::Text("emgb debug window");
-			ImGui::Text("a %x f %x af %x", s_gb->gb_register.a, s_gb->gb_register.f, s_gb->gb_register.af);
-			ImGui::Text("b %x c %x bc %x", s_gb->gb_register.b, s_gb->gb_register.c, s_gb->gb_register.bc);
-			ImGui::Text("d %x e %x de %x", s_gb->gb_register.d, s_gb->gb_register.e, s_gb->gb_register.de);
-			ImGui::Text("h %x l %x hl %x", s_gb->gb_register.h, s_gb->gb_register.l, s_gb->gb_register.hl);
-			ImGui::Text("pc %x sp %x", s_gb->gb_register.pc, s_gb->gb_register.sp);
-			ImGui::End();
-		}
-		{
-			ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiSetCond_FirstUseEver);
-			ImGui::Begin("LCD state");
-			ImGui::Text("Hello");
-			ImGui::End();
-		}
+			ImGui_ImplSdl_NewFrame(window);
+			{
+				ImGui::SetNextWindowPos(ImVec2(20, 20));
+				ImGui::Begin("CPU register state");
+				ImGui::Text("Gameboy debug window");
+				ImGui::Text("a %x f %x af %x", cpu.regs_.a, cpu.regs_.f, cpu.regs_.af);
+				ImGui::Text("b %x c %x bc %x", cpu.regs_.b, cpu.regs_.c, cpu.regs_.bc);
+				ImGui::Text("d %x e %x de %x", cpu.regs_.d, cpu.regs_.e, cpu.regs_.de);
+				ImGui::Text("h %x l %x hl %x", cpu.regs_.h, cpu.regs_.l, cpu.regs_.hl);
+				ImGui::Text("pc %x sp %x", cpu.regs_.pc, cpu.regs_.sp);
+				ImGui::End();
+			}
+			{
+				ImGui::SetNextWindowSize(ImVec2(300, 90), ImGuiSetCond_FirstUseEver);
+				ImGui::SetNextWindowPos(ImVec2(20, 200));
+				ImGui::Begin("Flag State");
+				ImGui::Text("Z: %s", cpu.isFlagSet(Flag::ZERO_FLAG) ? "1" : "0");
+				ImGui::Text("N: %s", cpu.isFlagSet(Flag::NEG_FLAG) ? "1" : "0");
+				ImGui::Text("H: %s", cpu.isFlagSet(Flag::HALFC_FLAG) ? "1" : "0");
+				ImGui::Text("C: %s", cpu.isFlagSet(Flag::CARRY_FLAG) ? "1" : "0");
+				ImGui::End();
+			}
 
 
-		// Rendering
-		glViewport(0, 0, (int)ImGui::GetIO().DisplaySize.x, (int)ImGui::GetIO().DisplaySize.y);
-		glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
-		glClear(GL_COLOR_BUFFER_BIT);
-		ImGui::Render();
-		SDL_GL_SwapWindow(window);
+			{
+				ImGui::SetNextWindowSize(ImVec2(250, 100), ImGuiSetCond_FirstUseEver);
+				ImGui::SetNextWindowPos(ImVec2(200, 20));
+
+				ImGui::Begin("Opcode");
+				ImGui::Text("Next opcode %x", cpu.getMmu().read8bit(cpu.regs_.pc));
+				ImGui::End();
+			}
+
+			// Rendering
+			glViewport(0, 0, (int)ImGui::GetIO().DisplaySize.x, (int)ImGui::GetIO().DisplaySize.y);
+			glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
+			glClear(GL_COLOR_BUFFER_BIT);
+			ImGui::Render();
+			SDL_GL_SwapWindow(window);
+
+			SDL_WaitEvent(&event);
+			if (event.key.keysym.sym == SDLK_ESCAPE)
+			{
+				exit(0);
+			}
+			switch (event.type)
+			{
+			case SDL_KEYDOWN:
+				go = true;
+				break;
+			} // End switch
+		}
+		exec = cpu.getMmu().read8bit(cpu.regs_.pc++);
+		//std::cout << "pc: " << std::hex << (int32_t) (cpu.regs_.pc - 1) << ": " << std::hex << (uint16_t)exec << " -> " << cpu.opcodes_[exec].value << std::endl;
+		cpu.opcodes_[exec].opFunc();
+		if (cpu.fjmp_ == false)
+			cpu.regs_.pc += cpu.opcodes_[exec].size;
+		cpu.fjmp_ = false;
 	}
 
 	// Cleanup
 	ImGui_ImplSdl_Shutdown();
 	SDL_GL_DeleteContext(glcontext);
 	SDL_DestroyWindow(window);
-	return (0);
-}
-
-int imgui(void *s_gb)
-{
-	IMGUI_debugger(s_gb);
 	return (0);
 }

@@ -3,6 +3,7 @@
 void Z80Cpu::cp8bit(uint8_t & reg, uint8_t value) {
 	clear_flags();
 
+    set_neg_flag();
     if (reg == value) {
         set_zero_flag();
     }
