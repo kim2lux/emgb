@@ -13,10 +13,10 @@ union u_mmu
 {
 	struct __attribute__((packed))
 	{
-		uint8_t rom_[0x8000];	  // 0 - 7FFF cartridge memory
-		uint8_t vram_[0x2000];	  // 8000 - 9FFF video RAM
-		uint8_t sram_[0x2000];	  // A000 - BFFF External RAM switch bank
-		uint8_t ram_[0x2000];	  // C000 - DFFF WRAM
+		uint8_t rom_[0x8000]; // 0 - 7FFF cartridge memory
+		uint8_t vram_[0x2000]; // 8000 - 9FFF video RAM
+		uint8_t sram_[0x2000]; // A000 - BFFF External RAM switch bank
+		uint8_t ram_[0x2000]; // C000 - DFFF WRAM
 		uint8_t echo_ram[0x1E00]; // E000- FDFF Echo Ram (Mapping C000~DDFF)
 		uint8_t oam_[0x00A0]; // FE00 - FE9F oam information tables
 		uint8_t unused_[0x0060]; // FEA0 - FEFF unused on GMB 
