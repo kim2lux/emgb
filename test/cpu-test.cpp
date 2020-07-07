@@ -1,37 +1,10 @@
-#include "gtest/gtest.h"
-#include "cpu.hpp"
-#include "rom.hpp"
-#include "memory"
+#include "test.hpp"
 #include <algorithm>
-
-class myTestFixture1 : public testing::Test
-{
-protected:
-    Cartridge cart;
-    Memory mem;
-    Z80Cpu cpu;
-    myTestFixture1() : mem(cart), cpu(mem)
-    {
-        cpu.tickCount_ = 0;
-        cpu.regs_.bc = 0x0000;
-        cpu.regs_.de = 0x1000;
-        cpu.regs_.hl = 0x2000;
-        cpu.regs_.sp = 0x3000;
-    }
-
-    virtual void SetUp() override
-    {
-        mem.write16bitToAddr(0xC000, 0xff00);
-        mem.write16bitToAddr(0xC002, 0xabcd);
-        mem.write16bitToAddr(0xC004, 0x4567);
-        mem.write16bitToAddr(0xC006, 0xa45d);
-    }
-};
 
 TEST_F(myTestFixture1, ld8)
 {
     cpu.regs_.b = 0x20;
-    cpu.getMmu().write8bit(0x8000, 0x30);
+    cpu.getMemory().write8bit(0x8000, 0x30);
     cpu.regs_.pc = 0x8000;
     std::find_if(cpu.opcodes_.begin(), cpu.opcodes_.end(), [](const OpcodeZ80 &opcode) {
         return opcode.opcode == 0x06;
@@ -53,7 +26,7 @@ TEST_F(myTestFixture1, ld8)
 
     ASSERT_EQ(cpu.regs_.b, 0x30);
     ASSERT_EQ(cpu.regs_.d, 0x30);
-    ASSERT_EQ(cpu.getMmu().read8bit(cpu.regs_.hl), 0x30);
+    ASSERT_EQ(cpu.getMemory().read8bit(cpu.regs_.hl), 0x30);
 }
 
 TEST_F(myTestFixture1, rotate)
@@ -114,11 +87,11 @@ TEST_F(myTestFixture1, dec)
     ASSERT_EQ(cpu.regs_.h, 0x0c);
 
     cpu.regs_.hl = 0xc000;
-    cpu.getMmu().write16bitToAddr(cpu.regs_.hl, 0x4003);
+    cpu.getMemory().write16bitToAddr(cpu.regs_.hl, 0x4003);
     std::find_if(cpu.opcodes_.begin(), cpu.opcodes_.end(), [](const OpcodeZ80 &opcode) {
         return opcode.opcode == 0x35;
     })->opFunc();
-    ASSERT_EQ(cpu.getMmu().read16bit(cpu.regs_.hl), 0x4002);
+    ASSERT_EQ(cpu.getMemory().read16bit(cpu.regs_.hl), 0x4002);
 }
 
 TEST_F(myTestFixture1, inc)
@@ -159,11 +132,11 @@ TEST_F(myTestFixture1, inc)
     ASSERT_EQ(cpu.regs_.h, 0x21);
 
     cpu.regs_.hl = 0xc000;
-    cpu.getMmu().write16bitToAddr(cpu.regs_.hl, 0x4003);
+    cpu.getMemory().write16bitToAddr(cpu.regs_.hl, 0x4003);
     std::find_if(cpu.opcodes_.begin(), cpu.opcodes_.end(), [](const OpcodeZ80 &opcode) {
         return opcode.opcode == 0x34;
     })->opFunc();
-    ASSERT_EQ(cpu.getMmu().read16bit(cpu.regs_.hl), 0x4004);
+    ASSERT_EQ(cpu.getMemory().read16bit(cpu.regs_.hl), 0x4004);
 }
 
 TEST_F(myTestFixture1, ld)
@@ -204,7 +177,7 @@ TEST_F(myTestFixture1, ld)
         std::find_if(cpu.opcodes_.begin(), cpu.opcodes_.end(), [](const OpcodeZ80 &opcode) {
             return opcode.opcode == 0x02;
         })->opFunc();
-        ASSERT_EQ(cpu.getMmu().read8bit(cpu.regs_.bc), 0xf8);
+        ASSERT_EQ(cpu.getMemory().read8bit(cpu.regs_.bc), 0xf8);
         ASSERT_EQ(cpu.tickCount_, 56);
 
         cpu.regs_.de = 0xc050;
@@ -212,7 +185,7 @@ TEST_F(myTestFixture1, ld)
         std::find_if(cpu.opcodes_.begin(), cpu.opcodes_.end(), [](const OpcodeZ80 &opcode) {
             return opcode.opcode == 0x12;
         })->opFunc();
-        ASSERT_EQ(cpu.getMmu().read8bit(cpu.regs_.de), 0x11);
+        ASSERT_EQ(cpu.getMemory().read8bit(cpu.regs_.de), 0x11);
         ASSERT_EQ(cpu.tickCount_, 64);
 
         cpu.regs_.hl = 0xc050;
@@ -220,7 +193,7 @@ TEST_F(myTestFixture1, ld)
         std::find_if(cpu.opcodes_.begin(), cpu.opcodes_.end(), [](const OpcodeZ80 &opcode) {
             return opcode.opcode == 0x22;
         })->opFunc();
-        ASSERT_EQ(cpu.getMmu().read8bit(cpu.regs_.hl - 1), 0x12);
+        ASSERT_EQ(cpu.getMemory().read8bit(cpu.regs_.hl - 1), 0x12);
         ASSERT_EQ(cpu.tickCount_, 72);
 
         cpu.regs_.hl = 0xc050;
@@ -228,7 +201,7 @@ TEST_F(myTestFixture1, ld)
         std::find_if(cpu.opcodes_.begin(), cpu.opcodes_.end(), [](const OpcodeZ80 &opcode) {
             return opcode.opcode == 0x32;
         })->opFunc();
-        ASSERT_EQ(cpu.getMmu().read8bit(cpu.regs_.hl + 1), 0x13);
+        ASSERT_EQ(cpu.getMemory().read8bit(cpu.regs_.hl + 1), 0x13);
         ASSERT_EQ(cpu.tickCount_, 80);
     }
 }

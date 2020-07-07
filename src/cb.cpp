@@ -229,7 +229,7 @@ void rlc_h(Z80Cpu &cpu) { registers.h = rlc(registers.h, cpu); }
 void rlc_l(Z80Cpu &cpu) { registers.l = rlc(registers.l, cpu); }
 
 // 0x06
-void rlc_hlp(Z80Cpu &cpu) { cpu.getMmu().write8bit(registers.hl, rlc(cpu.getMmu().read8bit(registers.hl), cpu)); }
+void rlc_hlp(Z80Cpu &cpu) { cpu.getMemory().write8bit(registers.hl, rlc(cpu.getMemory().read8bit(registers.hl), cpu)); }
 
 // 0x07
 void rlc_a(Z80Cpu &cpu) { registers.a = rlc(registers.a, cpu); }
@@ -253,7 +253,7 @@ void rrc_h(Z80Cpu &cpu) { registers.h = rrc(registers.h, cpu); }
 void rrc_l(Z80Cpu &cpu) { registers.l = rrc(registers.l, cpu); }
 
 // 0x0e
-void rrc_hlp(Z80Cpu &cpu) { cpu.getMmu().write8bit(registers.hl, rrc(cpu.getMmu().read8bit(registers.hl), cpu)); }
+void rrc_hlp(Z80Cpu &cpu) { cpu.getMemory().write8bit(registers.hl, rrc(cpu.getMemory().read8bit(registers.hl), cpu)); }
 
 // 0x0f
 void rrc_a(Z80Cpu &cpu) { registers.a = rrc(registers.a, cpu); }
@@ -277,7 +277,7 @@ void rl_h(Z80Cpu &cpu) { registers.h = rl(registers.h, cpu); }
 void rl_l(Z80Cpu &cpu) { registers.l = rl(registers.l, cpu); }
 
 // 0x16
-void rl_hlp(Z80Cpu &cpu) { cpu.getMmu().write8bit(registers.hl, rl(cpu.getMmu().read8bit(registers.hl), cpu)); }
+void rl_hlp(Z80Cpu &cpu) { cpu.getMemory().write8bit(registers.hl, rl(cpu.getMemory().read8bit(registers.hl), cpu)); }
 
 // 0x17
 void rl_a(Z80Cpu &cpu) { registers.a = rl(registers.a, cpu); }
@@ -301,7 +301,7 @@ void rr_h(Z80Cpu &cpu) { registers.h = rr(registers.h, cpu); }
 void rr_l(Z80Cpu &cpu) { registers.l = rr(registers.l, cpu); }
 
 // 0x1e
-void rr_hlp(Z80Cpu &cpu) { cpu.getMmu().write8bit(registers.hl, rr(cpu.getMmu().read8bit(registers.hl), cpu)); }
+void rr_hlp(Z80Cpu &cpu) { cpu.getMemory().write8bit(registers.hl, rr(cpu.getMemory().read8bit(registers.hl), cpu)); }
 
 // 0x1f
 void rr_a(Z80Cpu &cpu) { registers.a = rr(registers.a, cpu); }
@@ -325,7 +325,7 @@ void sla_h(Z80Cpu &cpu) { registers.h = sla(registers.h, cpu); }
 void sla_l(Z80Cpu &cpu) { registers.l = sla(registers.l, cpu); }
 
 // 0x26
-void sla_hlp(Z80Cpu &cpu) { cpu.getMmu().write8bit(registers.hl, sla(cpu.getMmu().read8bit(registers.hl), cpu)); }
+void sla_hlp(Z80Cpu &cpu) { cpu.getMemory().write8bit(registers.hl, sla(cpu.getMemory().read8bit(registers.hl), cpu)); }
 
 // 0x27
 void sla_a(Z80Cpu &cpu) { registers.a = sla(registers.a, cpu); }
@@ -349,7 +349,7 @@ void sra_h(Z80Cpu &cpu) { registers.h = sra(registers.h, cpu); }
 void sra_l(Z80Cpu &cpu) { registers.l = sra(registers.l, cpu); }
 
 // 0x2e
-void sra_hlp(Z80Cpu &cpu) { cpu.getMmu().write8bit(registers.hl, sra((unsigned char)registers.hl, cpu)); }
+void sra_hlp(Z80Cpu &cpu) { cpu.getMemory().write8bit(registers.hl, sra((unsigned char)registers.hl, cpu)); }
 
 // 0x2f
 void sra_a(Z80Cpu &cpu) { registers.a = sra(registers.a, cpu); }
@@ -373,7 +373,7 @@ void swap_h(Z80Cpu &cpu) { registers.h = swap(registers.h, cpu); }
 void swap_l(Z80Cpu &cpu) { registers.l = swap(registers.l, cpu); }
 
 // 0x36
-void swap_hlp(Z80Cpu &cpu) { cpu.getMmu().write8bit(registers.hl, swap(cpu.getMmu().read8bit(registers.hl), cpu)); }
+void swap_hlp(Z80Cpu &cpu) { cpu.getMemory().write8bit(registers.hl, swap(cpu.getMemory().read8bit(registers.hl), cpu)); }
 
 // 0x37
 void swap_a(Z80Cpu &cpu) { registers.a = swap(registers.a, cpu); }
@@ -397,7 +397,7 @@ void srl_h(Z80Cpu &cpu) { registers.h = srl(registers.h, cpu); }
 void srl_l(Z80Cpu &cpu) { registers.l = srl(registers.l, cpu); }
 
 // 0x3e
-void srl_hlp(Z80Cpu &cpu) { cpu.getMmu().write8bit(registers.hl, srl(cpu.getMmu().read8bit(registers.hl), cpu)); }
+void srl_hlp(Z80Cpu &cpu) { cpu.getMemory().write8bit(registers.hl, srl(cpu.getMemory().read8bit(registers.hl), cpu)); }
 
 // 0x3f
 void srl_a(Z80Cpu &cpu)
@@ -436,7 +436,7 @@ void bit_0_h(Z80Cpu &cpu) { bit(1 << 0, registers.h, cpu); }
 void bit_0_l(Z80Cpu &cpu) { bit(1 << 0, registers.l, cpu); }
 
 // 0x46
-void bit_0_hlp(Z80Cpu &cpu) { bit(1 << 0, cpu.getMmu().read8bit(registers.hl), cpu); }
+void bit_0_hlp(Z80Cpu &cpu) { bit(1 << 0, cpu.getMemory().read8bit(registers.hl), cpu); }
 
 // 0x47
 void bit_0_a(Z80Cpu &cpu) { bit(1 << 0, registers.a, cpu); }
@@ -460,7 +460,7 @@ void bit_1_h(Z80Cpu &cpu) { bit(1 << 1, registers.h, cpu); }
 void bit_1_l(Z80Cpu &cpu) { bit(1 << 1, registers.l, cpu); }
 
 // 0x4e
-void bit_1_hlp(Z80Cpu &cpu) { bit(1 << 1, cpu.getMmu().read8bit(registers.hl), cpu); }
+void bit_1_hlp(Z80Cpu &cpu) { bit(1 << 1, cpu.getMemory().read8bit(registers.hl), cpu); }
 
 // 0x4f
 void bit_1_a(Z80Cpu &cpu) { bit(1 << 1, registers.a, cpu); }
@@ -484,7 +484,7 @@ void bit_2_h(Z80Cpu &cpu) { bit(1 << 2, registers.h, cpu); }
 void bit_2_l(Z80Cpu &cpu) { bit(1 << 2, registers.l, cpu); }
 
 // 0x56
-void bit_2_hlp(Z80Cpu &cpu) { bit(1 << 2, cpu.getMmu().read8bit(registers.hl), cpu); }
+void bit_2_hlp(Z80Cpu &cpu) { bit(1 << 2, cpu.getMemory().read8bit(registers.hl), cpu); }
 
 // 0x57
 void bit_2_a(Z80Cpu &cpu) { bit(1 << 2, registers.a, cpu); }
@@ -508,7 +508,7 @@ void bit_3_h(Z80Cpu &cpu) { bit(1 << 3, registers.h, cpu); }
 void bit_3_l(Z80Cpu &cpu) { bit(1 << 3, registers.l, cpu); }
 
 // 0x5e
-void bit_3_hlp(Z80Cpu &cpu) { bit(1 << 3, cpu.getMmu().read8bit(registers.hl), cpu); }
+void bit_3_hlp(Z80Cpu &cpu) { bit(1 << 3, cpu.getMemory().read8bit(registers.hl), cpu); }
 
 // 0x5f
 void bit_3_a(Z80Cpu &cpu) { bit(1 << 3, registers.a, cpu); }
@@ -532,7 +532,7 @@ void bit_4_h(Z80Cpu &cpu) { bit(1 << 4, registers.h, cpu); }
 void bit_4_l(Z80Cpu &cpu) { bit(1 << 4, registers.l, cpu); }
 
 // 0x66
-void bit_4_hlp(Z80Cpu &cpu) { bit(1 << 4, cpu.getMmu().read8bit(registers.hl), cpu); }
+void bit_4_hlp(Z80Cpu &cpu) { bit(1 << 4, cpu.getMemory().read8bit(registers.hl), cpu); }
 
 // 0x67
 void bit_4_a(Z80Cpu &cpu) { bit(1 << 4, registers.a, cpu); }
@@ -556,7 +556,7 @@ void bit_5_h(Z80Cpu &cpu) { bit(1 << 5, registers.h, cpu); }
 void bit_5_l(Z80Cpu &cpu) { bit(1 << 5, registers.l, cpu); }
 
 // 0x6e
-void bit_5_hlp(Z80Cpu &cpu) { bit(1 << 5, cpu.getMmu().read8bit(registers.hl), cpu); }
+void bit_5_hlp(Z80Cpu &cpu) { bit(1 << 5, cpu.getMemory().read8bit(registers.hl), cpu); }
 
 // 0x6f
 void bit_5_a(Z80Cpu &cpu) { bit(1 << 5, registers.a, cpu); }
@@ -580,7 +580,7 @@ void bit_6_h(Z80Cpu &cpu) { bit(1 << 6, registers.h, cpu); }
 void bit_6_l(Z80Cpu &cpu) { bit(1 << 6, registers.l, cpu); }
 
 // 0x76
-void bit_6_hlp(Z80Cpu &cpu) { bit(1 << 6, cpu.getMmu().read8bit(registers.hl), cpu); }
+void bit_6_hlp(Z80Cpu &cpu) { bit(1 << 6, cpu.getMemory().read8bit(registers.hl), cpu); }
 
 // 0x77
 void bit_6_a(Z80Cpu &cpu) { bit(1 << 6, registers.a, cpu); }
@@ -604,7 +604,7 @@ void bit_7_h(Z80Cpu &cpu) { bit(1 << 7, registers.h, cpu); }
 void bit_7_l(Z80Cpu &cpu) { bit(1 << 7, registers.l, cpu); }
 
 // 0x7e
-void bit_7_hlp(Z80Cpu &cpu) { bit(1 << 7, cpu.getMmu().read8bit(registers.hl), cpu); }
+void bit_7_hlp(Z80Cpu &cpu) { bit(1 << 7, cpu.getMemory().read8bit(registers.hl), cpu); }
 
 // 0x7f
 void bit_7_a(Z80Cpu &cpu) { bit(1 << 7, registers.a, cpu); }
@@ -628,7 +628,7 @@ void res_0_h(Z80Cpu &cpu) { registers.h &= ~(1 << 0); }
 void res_0_l(Z80Cpu &cpu) { registers.l &= ~(1 << 0); }
 
 // 0x86
-void res_0_hlp(Z80Cpu &cpu) { cpu.getMmu().write8bit(registers.hl, cpu.getMmu().read8bit(registers.hl) & ~(1 << 0)); }
+void res_0_hlp(Z80Cpu &cpu) { cpu.getMemory().write8bit(registers.hl, cpu.getMemory().read8bit(registers.hl) & ~(1 << 0)); }
 
 // 0x87
 void res_0_a(Z80Cpu &cpu) { registers.a &= ~(1 << 0); }
@@ -652,7 +652,7 @@ void res_1_h(Z80Cpu &cpu) { registers.h &= ~(1 << 1); }
 void res_1_l(Z80Cpu &cpu) { registers.l &= ~(1 << 1); }
 
 // 0x8e
-void res_1_hlp(Z80Cpu &cpu) { cpu.getMmu().write8bit(registers.hl, registers.hl & ~(1 << 1)); }
+void res_1_hlp(Z80Cpu &cpu) { cpu.getMemory().write8bit(registers.hl, registers.hl & ~(1 << 1)); }
 
 // 0x8f
 void res_1_a(Z80Cpu &cpu) { registers.a &= ~(1 << 1); }
@@ -676,7 +676,7 @@ void res_2_h(Z80Cpu &cpu) { registers.h &= ~(1 << 2); }
 void res_2_l(Z80Cpu &cpu) { registers.l &= ~(1 << 2); }
 
 // 0x96
-void res_2_hlp(Z80Cpu &cpu) { cpu.getMmu().write8bit(registers.hl, registers.hl & ~(1 << 2)); }
+void res_2_hlp(Z80Cpu &cpu) { cpu.getMemory().write8bit(registers.hl, registers.hl & ~(1 << 2)); }
 
 // 0x97
 void res_2_a(Z80Cpu &cpu) { registers.a &= ~(1 << 2); }
@@ -700,7 +700,7 @@ void res_3_h(Z80Cpu &cpu) { registers.h &= ~(1 << 3); }
 void res_3_l(Z80Cpu &cpu) { registers.l &= ~(1 << 3); }
 
 // 0x9e
-void res_3_hlp(Z80Cpu &cpu) { cpu.getMmu().write8bit(registers.hl, registers.hl & ~(1 << 3)); }
+void res_3_hlp(Z80Cpu &cpu) { cpu.getMemory().write8bit(registers.hl, registers.hl & ~(1 << 3)); }
 
 // 0x9f
 void res_3_a(Z80Cpu &cpu) { registers.a &= ~(1 << 3); }
@@ -724,7 +724,7 @@ void res_4_h(Z80Cpu &cpu) { registers.h &= ~(1 << 4); }
 void res_4_l(Z80Cpu &cpu) { registers.l &= ~(1 << 4); }
 
 // 0xa6
-void res_4_hlp(Z80Cpu &cpu) { cpu.getMmu().write8bit(registers.hl, registers.hl & ~(1 << 4)); }
+void res_4_hlp(Z80Cpu &cpu) { cpu.getMemory().write8bit(registers.hl, registers.hl & ~(1 << 4)); }
 
 // 0xa7
 void res_4_a(Z80Cpu &cpu) { registers.a &= ~(1 << 4); }
@@ -748,7 +748,7 @@ void res_5_h(Z80Cpu &cpu) { registers.h &= ~(1 << 5); }
 void res_5_l(Z80Cpu &cpu) { registers.l &= ~(1 << 5); }
 
 // 0xae
-void res_5_hlp(Z80Cpu &cpu) { cpu.getMmu().write8bit(registers.hl, registers.hl & ~(1 << 5)); }
+void res_5_hlp(Z80Cpu &cpu) { cpu.getMemory().write8bit(registers.hl, registers.hl & ~(1 << 5)); }
 
 // 0xaf
 void res_5_a(Z80Cpu &cpu) { registers.a &= ~(1 << 5); }
@@ -772,7 +772,7 @@ void res_6_h(Z80Cpu &cpu) { registers.h &= ~(1 << 6); }
 void res_6_l(Z80Cpu &cpu) { registers.l &= ~(1 << 6); }
 
 // 0xb6
-void res_6_hlp(Z80Cpu &cpu) { cpu.getMmu().write8bit(registers.hl, registers.hl & ~(1 << 6)); }
+void res_6_hlp(Z80Cpu &cpu) { cpu.getMemory().write8bit(registers.hl, registers.hl & ~(1 << 6)); }
 
 // 0xb7
 void res_6_a(Z80Cpu &cpu) { registers.a &= ~(1 << 6); }
@@ -796,7 +796,7 @@ void res_7_h(Z80Cpu &cpu) { registers.h &= ~(1 << 7); }
 void res_7_l(Z80Cpu &cpu) { registers.l &= ~(1 << 7); }
 
 // 0xbe
-void res_7_hlp(Z80Cpu &cpu) { cpu.getMmu().write8bit(registers.hl, cpu.getMmu().read8bit(registers.hl) & ~(1 << 7)); }
+void res_7_hlp(Z80Cpu &cpu) { cpu.getMemory().write8bit(registers.hl, cpu.getMemory().read8bit(registers.hl) & ~(1 << 7)); }
 
 // 0xbf
 void res_7_a(Z80Cpu &cpu) { registers.a &= ~(1 << 7); }
@@ -820,7 +820,7 @@ void set_0_h(Z80Cpu &cpu) { registers.h = set(1 << 0, registers.h); }
 void set_0_l(Z80Cpu &cpu) { registers.l = set(1 << 0, registers.l); }
 
 // 0xc6
-void set_0_hlp(Z80Cpu &cpu) { cpu.getMmu().write8bit(registers.hl, set(1 << 0, cpu.getMmu().read8bit(registers.hl))); }
+void set_0_hlp(Z80Cpu &cpu) { cpu.getMemory().write8bit(registers.hl, set(1 << 0, cpu.getMemory().read8bit(registers.hl))); }
 
 // 0xc7
 void set_0_a(Z80Cpu &cpu) { registers.a = set(1 << 0, registers.a); }
@@ -844,7 +844,7 @@ void set_1_h(Z80Cpu &cpu) { registers.h = set(1 << 1, registers.h); }
 void set_1_l(Z80Cpu &cpu) { registers.l = set(1 << 1, registers.l); }
 
 // 0xce
-void set_1_hlp(Z80Cpu &cpu) { cpu.getMmu().write8bit(registers.hl, set(1 << 1, cpu.getMmu().read8bit(registers.hl))); }
+void set_1_hlp(Z80Cpu &cpu) { cpu.getMemory().write8bit(registers.hl, set(1 << 1, cpu.getMemory().read8bit(registers.hl))); }
 
 // 0xcf
 void set_1_a(Z80Cpu &cpu) { registers.a = set(1 << 1, registers.a); }
@@ -868,7 +868,7 @@ void set_2_h(Z80Cpu &cpu) { registers.h = set(1 << 2, registers.h); }
 void set_2_l(Z80Cpu &cpu) { registers.l = set(1 << 2, registers.l); }
 
 // 0xd6
-void set_2_hlp(Z80Cpu &cpu) { cpu.getMmu().write8bit(registers.hl, set(1 << 2, cpu.getMmu().read8bit(registers.hl))); }
+void set_2_hlp(Z80Cpu &cpu) { cpu.getMemory().write8bit(registers.hl, set(1 << 2, cpu.getMemory().read8bit(registers.hl))); }
 
 // 0xd7
 void set_2_a(Z80Cpu &cpu) { registers.a = set(1 << 2, registers.a); }
@@ -892,7 +892,7 @@ void set_3_h(Z80Cpu &cpu) { registers.h = set(1 << 3, registers.h); }
 void set_3_l(Z80Cpu &cpu) { registers.l = set(1 << 3, registers.l); }
 
 // 0xde
-void set_3_hlp(Z80Cpu &cpu) { cpu.getMmu().write8bit(registers.hl, set(1 << 3, cpu.getMmu().read8bit(registers.hl))); }
+void set_3_hlp(Z80Cpu &cpu) { cpu.getMemory().write8bit(registers.hl, set(1 << 3, cpu.getMemory().read8bit(registers.hl))); }
 
 // 0xdf
 void set_3_a(Z80Cpu &cpu) { registers.a = set(1 << 3, registers.a); }
@@ -916,7 +916,7 @@ void set_4_h(Z80Cpu &cpu) { registers.h = set(1 << 4, registers.h); }
 void set_4_l(Z80Cpu &cpu) { registers.l = set(1 << 4, registers.l); }
 
 //
-void set_4_hlp(Z80Cpu &cpu) { cpu.getMmu().write8bit(registers.hl, set(1 << 4, cpu.getMmu().read8bit(registers.hl))); }
+void set_4_hlp(Z80Cpu &cpu) { cpu.getMemory().write8bit(registers.hl, set(1 << 4, cpu.getMemory().read8bit(registers.hl))); }
 
 // 0xe7
 void set_4_a(Z80Cpu &cpu) { registers.a = set(1 << 4, registers.a); }
@@ -940,7 +940,7 @@ void set_5_h(Z80Cpu &cpu) { registers.h = set(1 << 5, registers.h); }
 void set_5_l(Z80Cpu &cpu) { registers.l = set(1 << 5, registers.l); }
 
 // 0xee
-void set_5_hlp(Z80Cpu &cpu) { cpu.getMmu().write8bit(registers.hl, set(1 << 5, cpu.getMmu().read8bit(registers.hl))); }
+void set_5_hlp(Z80Cpu &cpu) { cpu.getMemory().write8bit(registers.hl, set(1 << 5, cpu.getMemory().read8bit(registers.hl))); }
 
 // 0xef
 void set_5_a(Z80Cpu &cpu) { registers.a = set(1 << 5, registers.a); }
@@ -964,7 +964,7 @@ void set_6_h(Z80Cpu &cpu) { registers.h = set(1 << 6, registers.h); }
 void set_6_l(Z80Cpu &cpu) { registers.l = set(1 << 6, registers.l); }
 
 // 0xf6
-void set_6_hlp(Z80Cpu &cpu) { cpu.getMmu().write8bit(registers.hl, set(1 << 6, cpu.getMmu().read8bit(registers.hl))); }
+void set_6_hlp(Z80Cpu &cpu) { cpu.getMemory().write8bit(registers.hl, set(1 << 6, cpu.getMemory().read8bit(registers.hl))); }
 
 // 0xf7
 void set_6_a(Z80Cpu &cpu) { registers.a = set(1 << 6, registers.a); }
@@ -988,7 +988,7 @@ void set_7_h(Z80Cpu &cpu) { registers.h = set(1 << 7, registers.h); }
 void set_7_l(Z80Cpu &cpu) { registers.l = set(1 << 7, registers.l); }
 
 // 0xfe
-void set_7_hlp(Z80Cpu &cpu) { cpu.getMmu().write8bit(registers.hl, set(1 << 7, cpu.getMmu().read8bit(registers.hl))); }
+void set_7_hlp(Z80Cpu &cpu) { cpu.getMemory().write8bit(registers.hl, set(1 << 7, cpu.getMemory().read8bit(registers.hl))); }
 
 // 0xff
 void set_7_a(Z80Cpu &cpu) { registers.a = set(1 << 7, registers.a); }

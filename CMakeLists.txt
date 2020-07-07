@@ -3,6 +3,8 @@ set(CMAKE_PROJECT_VERSION 0.0.1)
 cmake_policy(SET CMP0048 NEW)
 project(gameboy VERSION 1.1.0)
 
+set(EXEC_GB_NAME gameboy)
+
 # includes cmake/FindSDL2.cmake
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
@@ -49,13 +51,13 @@ if(UNIX)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -Wall -Wpedantic -Wextra")
 endif(UNIX)
 
-add_executable(gb ${SOURCE_FILES})
+add_executable(${EXEC_GB_NAME} ${SOURCE_FILES})
 
 if(WIN32
    OR MSYS
    OR MINGW)
   target_link_libraries(
-    gb
+    ${EXEC_GB_NAME}
     -lmingw32
     -lSDL2main
     -lSDL2
@@ -80,5 +82,5 @@ endif(
   OR MINGW)
 
 if(UNIX)
-  target_link_libraries(gb ${SDL2_LIBRARY} -pthread -lglut -lGL -lGLU -lGLEW )
+  target_link_libraries(${EXEC_GB_NAME} ${SDL2_LIBRARY} -pthread -lglut -lGL -lGLU -lGLEW )
 endif(UNIX)

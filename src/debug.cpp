@@ -69,7 +69,7 @@ int IMGUI_debugger(Z80Cpu &cpu)
 				ImGui::SetNextWindowPos(ImVec2(200, 20));
 
 				ImGui::Begin("Opcode");
-				ImGui::Text("Next opcode %x", cpu.getMmu().read8bit(cpu.regs_.pc));
+				ImGui::Text("Next opcode %x", cpu.getMemory().read8bit(cpu.regs_.pc));
 				ImGui::End();
 			}
 
@@ -92,7 +92,7 @@ int IMGUI_debugger(Z80Cpu &cpu)
 				break;
 			} // End switch
 		}
-		exec = cpu.getMmu().read8bit(cpu.regs_.pc++);
+		exec = cpu.getMemory().read8bit(cpu.regs_.pc++);
 		//std::cout << "pc: " << std::hex << (int32_t) (cpu.regs_.pc - 1) << ": " << std::hex << (uint16_t)exec << " -> " << cpu.opcodes_[exec].value << std::endl;
 		cpu.opcodes_[exec].opFunc();
 		if (cpu.fjmp_ == false)

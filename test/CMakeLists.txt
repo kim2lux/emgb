@@ -1,4 +1,4 @@
-set(BINARY test-cpu)
+set(BINARY test-gb)
 file(
   GLOB_RECURSE TEST_SOURCES
   LIST_DIRECTORIES false

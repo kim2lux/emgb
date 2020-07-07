@@ -1,5 +1,4 @@
-#ifndef __CPU__
-#define __CPU__
+#pragma once
 
 struct s_gb;
 void initCpu(struct s_gb *s_gb);
@@ -97,4 +96,3 @@ struct s_cpu
 #define SET_CARRY() cpu.regs_.f |= 0x10
 #define CLEAR_CARRY() cpu.regs_.f &= ~(0x10)
 
-#endif

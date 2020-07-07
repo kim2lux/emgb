@@ -319,7 +319,7 @@ Z80Cpu::Z80Cpu(Memory &memory) : mmu_(memory)
     };
 }
 
-Memory &Z80Cpu::getMmu()
+Memory &Z80Cpu::getMemory()
 {
     return mmu_;
 }

@@ -27,7 +27,7 @@ class Z80Cpu
 {
 public:
     Z80Cpu(Memory &memory);
-    Memory &getMmu();
+    Memory &getMemory();
     s_register regs_;
     uint32_t tickCount_;
     std::vector<OpcodeZ80> opcodes_;
