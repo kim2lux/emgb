@@ -67,7 +67,7 @@ void Z80Cpu::ret_0xc9()
 void Z80Cpu::reti_0xd9() {
     tickCount_ += 16;
     regs_.pc = mmu_.pop16(regs_.sp);
-    ime_ = true;
+    interrupt_.masterInterrupt_ = true;
 }
 
 void Z80Cpu::ret_nz0xc0()

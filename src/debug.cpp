@@ -98,6 +98,7 @@ int IMGUI_debugger(Z80Cpu &cpu)
 		if (cpu.fjmp_ == false)
 			cpu.regs_.pc += cpu.opcodes_[exec].size;
 		cpu.fjmp_ = false;
+		cpu.processRequestInterrupt();
 	}
 
 	// Cleanup

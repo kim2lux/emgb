@@ -12,7 +12,7 @@ void Z80Cpu::halt_proc() {
 
 void Z80Cpu::ei_0xfb() {
     tickCount_ += 4;
-    ime_ = true;
+    interrupt_.masterInterrupt_ = true;
 }
 
 void Z80Cpu::cpl_0x2f()
@@ -49,5 +49,5 @@ void Z80Cpu::stop()
 void Z80Cpu::ime_di0xf3()
 {
     tickCount_ += 4;
-    ime_ = false;
+    interrupt_.masterInterrupt_ = false;
 }

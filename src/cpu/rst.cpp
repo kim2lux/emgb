@@ -2,6 +2,7 @@
 
 void Z80Cpu::rst(const uint16_t addr)
 {
+    tickCount_ += 16;
     mmu_.push16(regs_.sp, regs_.pc);
     regs_.pc = addr;
 }

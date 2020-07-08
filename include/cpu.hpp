@@ -6,6 +6,8 @@
 #include <functional>
 #include <vector>
 #include "memory.hpp"
+#include "interrupt.hpp"
+#include <memory>
 
 struct OpcodeZ80
 {
@@ -25,34 +27,38 @@ enum Flag : uint8_t
 
 class Z80Cpu
 {
+private:
+    Memory &mmu_;
 public:
     Z80Cpu(Memory &memory);
     Memory &getMemory();
     s_register regs_;
     uint32_t tickCount_;
     std::vector<OpcodeZ80> opcodes_;
+
+
     bool fjmp_;
     bool running_= true;
     bool halt_ = false;
-    bool ime_ = false;
-    
+    void updateInterrupt();
+    void processRequestInterrupt();
+    // flag
+    void set_zero_flag();
+    void clear_zero_flag();
 
-    void set_zero_flag() { regs_.f |= 0x80; }
-    void clear_zero_flag() { regs_.f &= ~(0x80); }
+    void set_neg_flag();
+    void clear_neg_flag();
 
-    void set_neg_flag() { regs_.f |= 0x40; }
-    void clear_neg_flag() { regs_.f &= ~(0x40); }
+    void set_half_carry_flag();
+    void clear_half_carry_flag();
 
-    void set_half_carry_flag() { regs_.f |= 0x20; }
-    void clear_half_carry_flag() { regs_.f &= ~(0x20); }
+    void set_carry_flag();
+    void clear_carry_flag();
 
-    void set_carry_flag() { regs_.f |= 0x10; }
-    void clear_carry_flag() { regs_.f &= ~(0x10); }
-
-    void clear_flags() { regs_.f = 0; }
+    void clear_flags();
     bool isFlagSet(Flag f);
-
 protected:
+    Interrupt interrupt_;
     void initRegister();
 
     void nop_0x00();
@@ -377,6 +383,4 @@ protected:
     void call_z_16_0xcc();
     void call_c_16_0xdc();
     void call_16_0xcd();
-
-    Memory &mmu_;
 };

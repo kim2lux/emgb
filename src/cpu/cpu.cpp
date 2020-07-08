@@ -1,12 +1,5 @@
 #include "cpu.hpp"
-
-/*
-#define ZERO_FLAG (s_gb->gb_register.f & 0x80)
-#define CARRY_FLAG (s_gb->gb_register.f & 0x10)
-#define NEG_FLAG (s_gb->gb_register.f & 0x40)
-#define HALFC_FLAG (s_gb->gb_register.f & 0x20)
-*/
-
+#include "utils.h"
 bool Z80Cpu::isFlagSet(Flag f)
 {
     switch (f)
@@ -23,6 +16,21 @@ bool Z80Cpu::isFlagSet(Flag f)
     return false;
 }
 
+void Z80Cpu::set_zero_flag() { regs_.f |= 0x80; }
+void Z80Cpu::clear_zero_flag() { regs_.f &= ~(0x80); }
+
+void Z80Cpu::set_neg_flag() { regs_.f |= 0x40; }
+void Z80Cpu::clear_neg_flag() { regs_.f &= ~(0x40); }
+
+void Z80Cpu::set_half_carry_flag() { regs_.f |= 0x20; }
+void Z80Cpu::clear_half_carry_flag() { regs_.f &= ~(0x20); }
+
+void Z80Cpu::set_carry_flag() { regs_.f |= 0x10; }
+void Z80Cpu::clear_carry_flag() { regs_.f &= ~(0x10); }
+
+void Z80Cpu::clear_flags() { regs_.f = 0; }
+bool Z80Cpu::isFlagSet(Flag f);
+
 void Z80Cpu::initRegister()
 {
     regs_.af = 0x01b0;
@@ -36,6 +44,53 @@ void Z80Cpu::initRegister()
     set_half_carry_flag();
     set_carry_flag();
     clear_neg_flag();
+}
+
+void Z80Cpu::updateInterrupt()
+{
+    interrupt_.interruptRequest_ = getMemory().read8bit(IF_REGISTER);
+    interrupt_.interruptEnable_ = getMemory().read8bit(IE_REGISTER);
+}
+
+void Z80Cpu::processRequestInterrupt()
+{
+    updateInterrupt();
+    if (interrupt_.interruptRequest_ > 0)
+    {
+        if (interrupt_.masterInterrupt_ == true)
+        {
+            for (int interrupt = 0; interrupt < 8; ++interrupt)
+            {
+                if (isBitSet(interrupt_.interruptEnable_, interrupt))
+                { // check if interrupt is enable
+                    if (isBitSet(interrupt_.interruptRequest_, interrupt))
+                    { // check if interrupt is requested
+                        this->getMemory().push16(regs_.sp, regs_.pc);
+                        switch (interrupt)
+                        {
+                        case InterruptType::VBLANCK:
+                            regs_.pc = VBLANK_ADDR;
+                            break;
+                        case InterruptType::LCDC:
+                            regs_.pc = LCDC_ADDR;
+                            break;
+                        case InterruptType::TIMER:
+                            regs_.pc = TIME_ADDR;
+                            break;
+                        case InterruptType::JOYPAD:
+                            regs_.pc = JOYPAD_ADDR;
+                            break;
+                        }
+                        clearBit(interrupt_.interruptEnable_, interrupt);
+                        getMemory().write8bit(IF_REGISTER, interrupt_.interruptEnable_);
+                    }
+                }
+            }
+        }
+        else if (halt_ == true) {
+            halt_ = false;
+        }
+    }
 }
 
 Z80Cpu::Z80Cpu(Memory &memory) : mmu_(memory)
