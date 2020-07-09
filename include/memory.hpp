@@ -1,6 +1,7 @@
 #pragma once
 
 #include "rom.hpp"
+#include "joypad.hpp"
 
 static constexpr uint16_t serial_data_addr = 0xff01;
 static constexpr uint16_t joypad_state_addr = 0xff00;
@@ -29,14 +30,17 @@ union u_mmu
 
 #pragma GCC diagnostic pop
 
+class Joypad;
+
 class Memory
 {
 public:
-    Memory(Cartridge &cart) : cart_(cart) {
+    Memory(Cartridge &cart, Joypad &joypad) : cart_(cart), joypad_(joypad) {
 		testScanline_ = 0x89;
 		interupt_ = 0;
 	}
 	Cartridge &cart_;
+	Joypad &joypad_;
 	u_mmu mmu_;
 	uint8_t testScanline_ = 0x89;
 	uint8_t interupt_ = 0;

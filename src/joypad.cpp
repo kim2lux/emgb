@@ -1,96 +1,110 @@
-#include "joypad.h"
-#include "GB.h"
+#include "joypad.hpp"
+#include "cpu.hpp"
+#include "utils.h"
 
-void keyDown(struct s_gb * gb_s)
+uint8_t Joypad::padState()
 {
-	gb_s->gb_cpu.stopCpu = 0;
-	switch (gb_s->gb_gpu.event.key.keysym.sym)
+	if ((key_ & 0x20) == 0)
+		return (0xc0 | keyButton_ | 0x10);
+	else if ((key_ & 0x10) == 0)
+		return (0xc0 | dirButton_ | 0x20);
+	return (0xff);
+}
+
+void Joypad::keyDown(SDL_Event &event, Z80Cpu &cpu)
+{
+	switch (event.key.keysym.sym)
 	{
-	case SDLK_ESCAPE:
-		gb_s->running = 0;
-		break;
 	case SDLK_w:
-		gb_s->gb_interrupts.interFlag |= INT_JOYPAD;
-		gb_s->gb_pad.button_key &= ~(1 << 3);
+		setBit(cpu.getInterrupt().interruptRequest_, InterruptType::JOYPAD);
+		keyButton_ &= ~(1 << 3);
 		break;
 	case SDLK_x:
-		gb_s->gb_interrupts.interFlag |= INT_JOYPAD;
-		gb_s->gb_pad.button_key &= ~(1 << 2);
+		setBit(cpu.getInterrupt().interruptRequest_, InterruptType::JOYPAD);
+		keyButton_ &= ~(1 << 2);
 		break;
 	case SDLK_c:
-		gb_s->gb_interrupts.interFlag |= INT_JOYPAD;
-		gb_s->gb_pad.button_key &= ~(1 << 1);
+		setBit(cpu.getInterrupt().interruptRequest_, InterruptType::JOYPAD);
+		keyButton_ &= ~(1 << 1);
 		break;
 	case SDLK_v:
-		gb_s->gb_interrupts.interFlag |= INT_JOYPAD;
-		gb_s->gb_pad.button_key &= ~(1 << 0);
+		setBit(cpu.getInterrupt().interruptRequest_, InterruptType::JOYPAD);
+		keyButton_ &= ~(1 << 0);
 		break;
 	case SDLK_DOWN:
-		gb_s->gb_interrupts.interFlag |= INT_JOYPAD;
-		gb_s->gb_pad.button_dir &= ~(1 << 3);
+		setBit(cpu.getInterrupt().interruptRequest_, InterruptType::JOYPAD);
+		dirButton_ &= ~(1 << 3);
 		break;
 	case SDLK_UP:
-		gb_s->gb_interrupts.interFlag |= INT_JOYPAD;
-		gb_s->gb_pad.button_dir &= ~(1 << 2);
+		setBit(cpu.getInterrupt().interruptRequest_, InterruptType::JOYPAD);
+		dirButton_ &= ~(1 << 2);
 		break;
 	case SDLK_LEFT:
-		gb_s->gb_interrupts.interFlag |= INT_JOYPAD;
-		gb_s->gb_pad.button_dir &= ~(1 << 1);
+		setBit(cpu.getInterrupt().interruptRequest_, InterruptType::JOYPAD);
+		dirButton_ &= ~(1 << 1);
 		break;
 	case SDLK_RIGHT:
-		gb_s->gb_interrupts.interFlag |= INT_JOYPAD;
-		gb_s->gb_pad.button_dir &= ~(1 << 0);
+		setBit(cpu.getInterrupt().interruptRequest_, InterruptType::JOYPAD);
+		dirButton_ &= ~(1 << 0);
 		break;
 	}
 	return;
 }
 
-void keyUp(struct s_gb * gb_s)
+void Joypad::keyUp(SDL_Event &event, Z80Cpu &cpu)
 {
-	switch (gb_s->gb_gpu.event.key.keysym.sym)
+	switch (event.key.keysym.sym)
 	{
 	case SDLK_w:
-		gb_s->gb_pad.button_key |= (1 << 3);
+		keyButton_ |= (1 << 3);
 		break;
 	case SDLK_x:
-		gb_s->gb_pad.button_key |= (1 << 2);
+		keyButton_ |= (1 << 2);
 		break;
 	case SDLK_c:
-		gb_s->gb_pad.button_key |= (1 << 1);
+		keyButton_ |= (1 << 1);
 		break;
 	case SDLK_v:
-		gb_s->gb_pad.button_key |= (1 << 0);
+		keyButton_ |= (1 << 0);
 		break;
 	case SDLK_DOWN:
-		gb_s->gb_pad.button_dir |= (1 << 3);
+		dirButton_ |= (1 << 3);
 		break;
 	case SDLK_UP:
-		gb_s->gb_pad.button_dir |= (1 << 2);
+		dirButton_ |= (1 << 2);
 		break;
 	case SDLK_LEFT:
-		gb_s->gb_pad.button_dir |= (1 << 1);
+		dirButton_ |= (1 << 1);
 		break;
 	case SDLK_RIGHT:
-		gb_s->gb_pad.button_dir |= (1 << 0);
+		dirButton_ |= (1 << 0);
 		break;
 	}
 }
 
-void handleEvent(struct s_gb * gb_s)
+void Joypad::handleEvent(SDL_Event &event, Z80Cpu &cpu)
 {
-	if (SDL_PollEvent(&(gb_s->gb_gpu.event)) != 0)
+	if (SDL_PollEvent(&event) != 0)
 	{
-		switch (gb_s->gb_gpu.event.type) {
-		case SDL_QUIT: {
+		switch (event.type)
+		{
+		case SDL_QUIT:
+		{
 			printf("see u.\n");
-			gb_s->running = 0;
+			exit(0);
+			break;
+		}
+		case SDLK_ESCAPE:
+		{
+			printf("see u.\n");
+			exit(0);
 			break;
 		}
 		case SDL_KEYDOWN:
-			keyDown(gb_s);
+			keyDown(event, cpu);
 			break;
 		case SDL_KEYUP:
-			keyUp(gb_s);
+			keyUp(event, cpu);
 			break;
 		}
 	}

@@ -9,7 +9,8 @@ protected:
     Cartridge cart;
     Memory mem;
     Z80Cpu cpu;
-    myTestFixture1() : mem(cart), cpu(mem)
+    Joypad joypad;
+    myTestFixture1() : mem(cart, joypad), cpu(mem)
     {
         cpu.tickCount_ = 0;
         cpu.regs_.bc = 0x0000;

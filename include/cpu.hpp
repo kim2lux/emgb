@@ -9,6 +9,8 @@
 #include "interrupt.hpp"
 #include <memory>
 
+class Memory;
+
 struct OpcodeZ80
 {
     uint8_t opcode;
@@ -25,23 +27,46 @@ enum Flag : uint8_t
     NEG_FLAG = 3
 };
 
+class Timer
+{
+public:
+    uint8_t tac_; // Timer control: 0xff07
+    static constexpr uint16_t tac_addr = 0xff07;
+    uint8_t tma_; // Timer modulo: 0xff06
+    static constexpr uint16_t tma_addr = 0xff06;
+    uint8_t tima_; // Timer counter: 0xff05
+    static constexpr uint16_t tima_addr = 0xff05;
+    uint32_t clockSpeed_ = 1024;
+    uint32_t timerCycleCounter_ = 0;
+    uint32_t divRegister_ = 0;
+    static constexpr uint16_t div_addr = 0xff04;
+};
+
 class Z80Cpu
 {
 private:
     Memory &mmu_;
+
 public:
+    static constexpr uint32_t clockspeed = 4194304;
     Z80Cpu(Memory &memory);
     Memory &getMemory();
+    Timer timer_;
     s_register regs_;
     uint32_t tickCount_;
     std::vector<OpcodeZ80> opcodes_;
 
-
     bool fjmp_;
-    bool running_= true;
+    bool running_ = true;
     bool halt_ = false;
-    void updateInterrupt();
+
+    // timer
+    void updateTimer();
+
+    // interrupt
+    void requestInterrupt(InterruptType type);
     void processRequestInterrupt();
+
     // flag
     void set_zero_flag();
     void clear_zero_flag();
@@ -58,15 +83,22 @@ public:
     void clear_flags();
     bool isFlagSet(Flag f);
 
-    Interrupt &getInterrupt() {
+    Interrupt &getInterrupt()
+    {
         return interrupt_;
     }
+
+private:
+    void updateInterrupt();
+    void updateClockSpeed();
+
 protected:
     Interrupt interrupt_;
     void initRegister();
 
     void nop_0x00();
-    void no_operation() {
+    void no_operation()
+    {
         ;
     }
 
@@ -83,7 +115,6 @@ protected:
     void rst_18_0xdf();
     void rst_28_0xef();
     void rst_38_0xff();
-
 
     // ctrl instruction
     void daa_0x27();
@@ -248,8 +279,6 @@ protected:
     void sbc_a_8();
     void sbc_a_8_de();
 
-
-
     // or instruction
     void or8bit(uint8_t &reg, uint8_t v);
     void or_a();
@@ -262,7 +291,6 @@ protected:
     void or_hl();
     void or_a_8_f6();
 
-
     // cp instruction
     void cp8bit(uint8_t &reg, uint8_t v);
     void cp_a();
@@ -274,7 +302,6 @@ protected:
     void cp_l();
     void cp_hl();
     void cp_a_8_fe();
-
 
     // xor instruction
     void xor8bit(uint8_t &reg, uint8_t v);
@@ -311,7 +338,6 @@ protected:
     void sub_l();
     void sub_hl();
     void sub_a_8_d6();
-
 
     // adc instruction
     void adc8bit(uint8_t &reg, uint8_t v);

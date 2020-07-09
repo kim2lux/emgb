@@ -1,9 +1,12 @@
-#include "io.h"
-#include "GB.h"
+#include "gpu.hpp"
 #include <stdint.h>
 #define GB_W 160
 #define GB_H 144
 
+
+
+
+#ifdef DEAD_CODE
 void initDisplay(struct s_gb *s_gb)
 {
   SDL_Init(SDL_INIT_VIDEO);
@@ -297,3 +300,4 @@ void updateGpu(struct s_gb *s_gb)
 		break;
 	}
 }
+#endif

@@ -44,8 +44,7 @@ uint8_t Memory::read8bit(uint16_t addr)
     {
         if (addr == joypad_state_addr)
         {
-            //return (padState(s_gb));
-            return (0xef);
+            return (joypad_.padState());
         }
         else if (addr == scanline_value_addr)
         {
@@ -59,6 +58,14 @@ uint8_t Memory::read8bit(uint16_t addr)
 int Memory::write8bit(uint16_t addr, uint8_t value)
 {
     mmu_.raw[addr] = value;
+    if (addr >= 0xE000 && addr < 0xDFFF) {
+        mmu_.raw[addr - 0x1000] = value; //echo ram
+    }
+    if (addr == joypad_state_addr)
+    {
+        std::cout << "request input key: " << std::hex << value << std::endl;
+        joypad_.key_ = value;
+    }
     if (addr == serial_data_addr)
     {
         std::cout << (char)value << std::endl;
@@ -74,11 +81,7 @@ uint8_t Memory::memoperation(uint16_t addr, int8_t value)
 
 void Memory::memoryInit()
 {
-    memset(mmu_.sram_, 0, 0x2000);
-    memset(mmu_.vram_, 0, 0x2000);
-    memset(mmu_.ram_, 0, 0x2000);
-    memset(mmu_.io_registers_, 0, 0x0080);
-
+    memset(mmu_.raw, 0, 0xffff);
     write8bit(0xFF05, 0x00); //tima
     write8bit(0xFF06, 0x00); //tma
     write8bit(0xFF07, 0x00); //tac

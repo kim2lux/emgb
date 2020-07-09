@@ -19,9 +19,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(SOURCE_FILES
     src/main.cpp
+    src/gpu.cpp
     src/rom.cpp
     src/memory.cpp
     src/joypad.cpp
+    src/cb.cpp
+    "src/cpu/and.cpp"
     src/cpu/ld.cpp
     src/cpu/cpu.cpp
     src/cpu/inc.cpp
@@ -35,14 +38,11 @@ set(SOURCE_FILES
     src/cpu/stack.cpp
     src/cpu/ctrl.cpp
     src/cpu/rst.cpp
-    src/cb.cpp
-    src/debug.cpp
     src/imgui/imgui.cpp
     src/imgui/imgui_demo.cpp
     src/imgui/imgui_draw.cpp
     src/imgui/imgui_impl_sdl.cpp
-    src/debug.cpp
-    src/cpu/and.cpp)
+    src/debug.cpp)
 
 set_source_files_properties(src/cpu.cpp PROPERTIES LANGUAGE CXX)
 set_source_files_properties(src/rom.cpp PROPERTIES LANGUAGE CXX)

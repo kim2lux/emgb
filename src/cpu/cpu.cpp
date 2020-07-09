@@ -33,23 +33,91 @@ bool Z80Cpu::isFlagSet(Flag f);
 
 void Z80Cpu::initRegister()
 {
-    regs_.af = 0x01b0;
-    regs_.bc = 0x0013;
-    regs_.de = 0x00d8;
-    regs_.hl = 0x014d;
+//    regs_.af = 0x01b0;
+//    regs_.bc = 0x0013;
+//    regs_.de = 0x00d8;
+//    regs_.hl = 0x014d;
+//    regs_.sp = 0xfffe;
+//    regs_.pc = 0x100;
+
+    regs_.af = 0x1180;
+    regs_.bc = 0x0;
+    regs_.de = 0xff56;
+    regs_.hl = 0x000d;
     regs_.sp = 0xfffe;
     regs_.pc = 0x100;
 
-    set_zero_flag();
+
+    /*set_zero_flag();
     set_half_carry_flag();
     set_carry_flag();
-    clear_neg_flag();
+    clear_neg_flag();*/
 }
 
 void Z80Cpu::updateInterrupt()
 {
     interrupt_.interruptRequest_ = getMemory().read8bit(IF_REGISTER);
     interrupt_.interruptEnable_ = getMemory().read8bit(IE_REGISTER);
+}
+
+void Z80Cpu::updateClockSpeed()
+{
+    timer_.tac_ = mmu_.read8bit(Timer::tac_addr);
+    switch (timer_.tac_ & 0x03)
+    {
+    case 0:
+        timer_.clockSpeed_ = 4096;
+        break;
+    case 1:
+        timer_.clockSpeed_ = 262144;
+        break;
+    case 2:
+        timer_.clockSpeed_ = 65536;
+        break;
+    case 3:
+        timer_.clockSpeed_ = 16384;
+        break;
+    }
+}
+
+void Z80Cpu::updateTimer()
+{
+    timer_.divRegister_ += tickCount_;
+    updateClockSpeed();
+    if (isBitSet(timer_.tac_, 2) == true)
+    {
+        timer_.timerCycleCounter_ += tickCount_;
+        if (timer_.timerCycleCounter_ >= timer_.clockSpeed_)
+        {
+
+            timer_.tima_ = mmu_.read8bit(Timer::tima_addr);
+            if (timer_.tima_ == 0xff)
+            {
+                timer_.tima_ = mmu_.read8bit(Timer::tma_addr);
+                mmu_.write8bit(Timer::tima_addr, timer_.tima_); // update tma value to tima
+                setBit(interrupt_.interruptRequest_, InterruptType::TIMER);
+                std::cout << "Timer interrupt" << std::endl;
+            }
+            else
+            {
+                timer_.tima_ += 1;
+                mmu_.write8bit(Timer::tima_addr, timer_.tima_);
+            }
+            timer_.timerCycleCounter_ -= tickCount_;
+        }
+    }
+    if (timer_.divRegister_ >= 256)
+    {
+        timer_.divRegister_ -= 256;
+        uint8_t inc = mmu_.read8bit(timer_.div_addr) + 1;
+        mmu_.write8bit(timer_.div_addr, inc);
+    }
+}
+
+void Z80Cpu::requestInterrupt(InterruptType type) {
+    interrupt_.interruptRequest_ = getMemory().read8bit(IF_REGISTER);
+    setBit(interrupt_.interruptRequest_, type);
+    getMemory().write8bit(IF_REGISTER, interrupt_.interruptRequest_);
 }
 
 void Z80Cpu::processRequestInterrupt()
@@ -83,6 +151,7 @@ void Z80Cpu::processRequestInterrupt()
                         }
                         interrupt_.masterInterrupt_ = false;
                         halt_ = false;
+                        tickCount_ += 20;
                         clearBit(interrupt_.interruptRequest_, interrupt);
                         getMemory().write8bit(IF_REGISTER, interrupt_.interruptRequest_);
                         return;

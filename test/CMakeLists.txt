@@ -14,6 +14,7 @@ set(SOURCES
     ${PROJECT_SOURCE_DIR}/src/cpu/adc.cpp
     ${PROJECT_SOURCE_DIR}/src/cpu/sbc.cpp
     ${PROJECT_SOURCE_DIR}/src/cpu/sub.cpp
+    ${PROJECT_SOURCE_DIR}/src/gpu.cpp
     ${PROJECT_SOURCE_DIR}/src/cpu/stack.cpp
     ${PROJECT_SOURCE_DIR}/src/cpu/ctrl.cpp
     ${PROJECT_SOURCE_DIR}/src/cpu/rst.cpp
@@ -21,7 +22,9 @@ set(SOURCES
     ${PROJECT_SOURCE_DIR}/src/cpu/rotate.cpp
     ${PROJECT_SOURCE_DIR}/src/memory.cpp
     ${PROJECT_SOURCE_DIR}/src/rom.cpp
-    ${PROJECT_SOURCE_DIR}/src/cb.cpp)
+    ${PROJECT_SOURCE_DIR}/src/gpu.cpp
+    ${PROJECT_SOURCE_DIR}/src/cb.cpp
+    ${PROJECT_SOURCE_DIR}/src/joypad.cpp)
 enable_testing()
 
 add_executable(${BINARY} ${SOURCES})

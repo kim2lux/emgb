@@ -34,15 +34,6 @@ void	updateLcdc(struct s_gb *s_gb)
 
 }
 
-unsigned char padState(struct s_gb *s_gb)
-{
-	if ((s_gb->gb_pad.key & 0x20) == 0)
-		return (0xc0 | s_gb->gb_pad.button_key | 0x10);
-	else if ((s_gb->gb_pad.key & 0x10) == 0)
-		return (0xc0 | s_gb->gb_pad.button_dir | 0x20);
-	return (0xff);
-}
-
 void oamTransfert(unsigned char src, struct s_gb *s_gb)
 {
 	unsigned short oamsrc  = (src << 8);

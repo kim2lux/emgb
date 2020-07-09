@@ -3,7 +3,7 @@
 void Z80Cpu::jmp_8_0x18()
 {
     tickCount_ += 12;
-    regs_.pc += (int8_t)mmu_.read8bit(regs_.pc) + 1;
+    regs_.pc += static_cast<char>(mmu_.read8bit(regs_.pc)) + 1;
     fjmp_ = true;
 }
 
@@ -13,7 +13,8 @@ void Z80Cpu::jmp_8_if_not_zero_0x20()
     if (!isFlagSet(Flag::ZERO_FLAG))
     {
         tick = 12;
-        regs_.pc += static_cast<int8_t>(mmu_.read8bit(regs_.pc)) + 1;
+        int8_t val = static_cast<char>(mmu_.read8bit(regs_.pc));
+        regs_.pc += val + 1;
         fjmp_ = true;
     }
     else {
@@ -28,7 +29,7 @@ void Z80Cpu::jmp_8_if_not_carry_0x30()
     if (!isFlagSet(Flag::CARRY_FLAG))
     {
         tick = 12;
-        regs_.pc += static_cast<int8_t>(mmu_.read8bit(regs_.pc)) + 1;
+        regs_.pc += static_cast<char>(mmu_.read8bit(regs_.pc)) + 1;
         fjmp_ = true;
     }
     tickCount_ += tick;

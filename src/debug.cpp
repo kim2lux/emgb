@@ -1,4 +1,3 @@
-#include "GB.h"
 #include "imgui.h"
 #include "imgui_impl_sdl.h"
 #include <stdio.h>
@@ -6,10 +5,10 @@
 #include <SDL_opengl.h>
 #include "cpu.hpp"
 #include <iostream>
+#include "joypad.hpp"
 
 int IMGUI_debugger(Z80Cpu &cpu)
 {
-
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
@@ -30,15 +29,15 @@ int IMGUI_debugger(Z80Cpu &cpu)
 	bool done = false;
 	uint8_t exec;
 	SDL_Event event;
-	bool go = false;
+	bool debug = true;
 	uint8_t start = 0;
 
 	while (done == false)
 	{
-		go = false;
-		if (cpu.regs_.pc == 0xc086)
-		    start = 1;
-		while (go == true && start == 1)
+		debug = true;
+		if (cpu.regs_.pc == 0xc2b4)
+			start = 1;
+		while (debug == true && start == 1)
 		{
 			ImGui_ImplSdl_NewFrame(window);
 			{
@@ -63,11 +62,18 @@ int IMGUI_debugger(Z80Cpu &cpu)
 				ImGui::End();
 			}
 
-
+						{
+				ImGui::SetNextWindowSize(ImVec2(300, 90), ImGuiSetCond_FirstUseEver);
+				ImGui::SetNextWindowPos(ImVec2(20, 350));
+				ImGui::Begin("Interrupt State");
+				ImGui::Text("IE: %x", cpu.getInterrupt().interruptEnable_);
+				ImGui::Text("IF: %x", cpu.getInterrupt().interruptRequest_);
+				ImGui::Text("ime: %d", cpu.getInterrupt().masterInterrupt_);
+				ImGui::End();
+			}
 			{
 				ImGui::SetNextWindowSize(ImVec2(250, 100), ImGuiSetCond_FirstUseEver);
 				ImGui::SetNextWindowPos(ImVec2(200, 20));
-
 				ImGui::Begin("Opcode");
 				ImGui::Text("Next opcode %x", cpu.getMemory().read8bit(cpu.regs_.pc));
 				ImGui::End();
@@ -79,19 +85,28 @@ int IMGUI_debugger(Z80Cpu &cpu)
 			glClear(GL_COLOR_BUFFER_BIT);
 			ImGui::Render();
 			SDL_GL_SwapWindow(window);
+			if (SDL_PollEvent(&event) != 0)
+			{
+				switch (event.type)
+				{
+				case SDL_QUIT:
+				{
+					printf("see u.\n");
+					exit(0);
+					break;
+				}
 
-			SDL_WaitEvent(&event);
-			if (event.key.keysym.sym == SDLK_ESCAPE)
-			{
-				exit(0);
+
+				case SDL_KEYDOWN:
+					std::cout << "out dbg" << std::endl;
+					debug = false;
+					break;
+				}
 			}
-			switch (event.type)
-			{
-			case SDL_KEYDOWN:
-				go = true;
-				break;
-			} // End switch
 		}
+
+		cpu.getMemory().joypad_.handleEvent(event, cpu);
+		cpu.updateTimer();
 		exec = cpu.getMemory().read8bit(cpu.regs_.pc++);
 		//std::cout << "pc: " << std::hex << (int32_t) (cpu.regs_.pc - 1) << ": " << std::hex << (uint16_t)exec << " -> " << cpu.opcodes_[exec].value << std::endl;
 		cpu.opcodes_[exec].opFunc();
@@ -100,7 +115,6 @@ int IMGUI_debugger(Z80Cpu &cpu)
 		cpu.fjmp_ = false;
 		cpu.processRequestInterrupt();
 	}
-
 	// Cleanup
 	ImGui_ImplSdl_Shutdown();
 	SDL_GL_DeleteContext(glcontext);
