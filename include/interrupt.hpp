@@ -29,6 +29,14 @@ enum InterruptType {
     JOYPAD = 0x04
 };
 
+enum InterruptAddr {
+    VBLANCK_JMP = 0x40,
+    LCDC_JMP = 0x48,
+    TIMER_JMP = 0x50,
+    SERIAL_JMP = 0x58,
+    JOYPAD_JMP = 0x60
+};
+
 struct Interrupt
 {
 public:

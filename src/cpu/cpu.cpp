@@ -81,8 +81,11 @@ void Z80Cpu::processRequestInterrupt()
                             regs_.pc = JOYPAD_ADDR;
                             break;
                         }
-                        clearBit(interrupt_.interruptEnable_, interrupt);
-                        getMemory().write8bit(IF_REGISTER, interrupt_.interruptEnable_);
+                        interrupt_.masterInterrupt_ = false;
+                        halt_ = false;
+                        clearBit(interrupt_.interruptRequest_, interrupt);
+                        getMemory().write8bit(IF_REGISTER, interrupt_.interruptRequest_);
+                        return;
                     }
                 }
             }

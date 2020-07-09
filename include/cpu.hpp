@@ -57,6 +57,10 @@ public:
 
     void clear_flags();
     bool isFlagSet(Flag f);
+
+    Interrupt &getInterrupt() {
+        return interrupt_;
+    }
 protected:
     Interrupt interrupt_;
     void initRegister();
