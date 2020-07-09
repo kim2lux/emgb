@@ -6,6 +6,7 @@
 #include "cpu.hpp"
 #include <iostream>
 #include "joypad.hpp"
+#include "gpu.hpp"
 
 int IMGUI_debugger(Z80Cpu &cpu)
 {
@@ -32,12 +33,14 @@ int IMGUI_debugger(Z80Cpu &cpu)
 	bool debug = true;
 	uint8_t start = 0;
 
+	Gpu gpu(cpu);
+
 	while (done == false)
 	{
 		debug = true;
 		if (cpu.regs_.pc == 0xc2b4)
 			start = 1;
-		while (debug == true && start == 1)
+		while (debug == false && start == 1)
 		{
 			ImGui_ImplSdl_NewFrame(window);
 			{
@@ -114,6 +117,7 @@ int IMGUI_debugger(Z80Cpu &cpu)
 			cpu.regs_.pc += cpu.opcodes_[exec].size;
 		cpu.fjmp_ = false;
 		cpu.processRequestInterrupt();
+		gpu.updateGpu();
 	}
 	// Cleanup
 	ImGui_ImplSdl_Shutdown();

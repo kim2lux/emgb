@@ -133,7 +133,7 @@ void Z80Cpu::cp_a_8_fe() {
 
 void Z80Cpu::add_sp_r_0xe8() {
     tickCount_ += 16;
-    uint8_t res = mmu_.read8bit(regs_.pc);
+    int8_t res = mmu_.read8bit(regs_.pc);
 
     clear_flags();
 

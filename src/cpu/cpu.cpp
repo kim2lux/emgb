@@ -33,25 +33,17 @@ bool Z80Cpu::isFlagSet(Flag f);
 
 void Z80Cpu::initRegister()
 {
-//    regs_.af = 0x01b0;
-//    regs_.bc = 0x0013;
-//    regs_.de = 0x00d8;
-//    regs_.hl = 0x014d;
-//    regs_.sp = 0xfffe;
-//    regs_.pc = 0x100;
-
-    regs_.af = 0x1180;
-    regs_.bc = 0x0;
-    regs_.de = 0xff56;
-    regs_.hl = 0x000d;
+    regs_.af = 0x01b0;
+    regs_.bc = 0x0013;
+    regs_.de = 0x00d8;
+    regs_.hl = 0x014d;
     regs_.sp = 0xfffe;
     regs_.pc = 0x100;
 
-
-    /*set_zero_flag();
+    set_zero_flag();
     set_half_carry_flag();
     set_carry_flag();
-    clear_neg_flag();*/
+    clear_neg_flag();
 }
 
 void Z80Cpu::updateInterrupt()
@@ -220,7 +212,7 @@ Z80Cpu::Z80Cpu(Memory &memory) : mmu_(memory)
         {0x30, "jmp_8_if_not_carry_0x30", std::bind(&Z80Cpu::jmp_8_if_not_carry_0x30, this), 1},
         {0x31, "ld_16_to_sp_0x31", std::bind(&Z80Cpu::ld_16_to_sp_0x31, this), 2},
         {0x32, "ld_a_to_hl_addr_0x32", std::bind(&Z80Cpu::ld_a_to_hl_addr_0x32, this), 0},
-        {0x33, "inc_bc_0x33", std::bind(&Z80Cpu::inc_sp_0x33, this), 0},
+        {0x33, "inc_sp_0x33", std::bind(&Z80Cpu::inc_sp_0x33, this), 0},
         {0x34, "inc_hl_addr_0x34", std::bind(&Z80Cpu::inc_hl_addr_0x34, this), 0},
         {0x35, "dec_hl_addr_0x35", std::bind(&Z80Cpu::dec_hl_addr_0x35, this), 0},
         {0x36, "ld_8_to_hl_addr_0x36", std::bind(&Z80Cpu::ld_8_to_hl_addr_0x36, this), 1},

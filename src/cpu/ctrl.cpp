@@ -29,7 +29,7 @@ void Z80Cpu::ccf_0x3f()
     clear_neg_flag();
     clear_half_carry_flag();
 
-    regs_.a = regs_.a ^ 0x10;
+    regs_.f = regs_.f ^ 0x10;
 }
 
 void Z80Cpu::scf_0x37()

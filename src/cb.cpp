@@ -349,7 +349,12 @@ void sra_h(Z80Cpu &cpu) { registers.h = sra(registers.h, cpu); }
 void sra_l(Z80Cpu &cpu) { registers.l = sra(registers.l, cpu); }
 
 // 0x2e
-void sra_hlp(Z80Cpu &cpu) { cpu.getMemory().write8bit(registers.hl, sra((unsigned char)registers.hl, cpu)); }
+void sra_hlp(Z80Cpu &cpu)
+{
+    uint8_t value = cpu.getMemory().read8bit(cpu.regs_.hl);
+    sra(value, cpu);
+    cpu.getMemory().write8bit(registers.hl, value);
+}
 
 // 0x2f
 void sra_a(Z80Cpu &cpu) { registers.a = sra(registers.a, cpu); }

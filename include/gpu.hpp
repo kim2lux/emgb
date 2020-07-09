@@ -3,6 +3,7 @@
 #include "cpu.hpp"
 #include "utils.h"
 
+static constexpr uint16_t LCD_DISPLAY_CTRL = 0xff40;
 static constexpr uint16_t LCDC_STATUS_ADDR = 0xff41;
 
 static constexpr uint16_t SCY_ADDR = 0xff42;
@@ -16,11 +17,11 @@ static constexpr uint16_t LYC_ADDR = 0xff45;
 
 const int MAX_VIDEO_CYCLES = 456;
 const int MIN_HBLANK_MODE_CYCLES = 204;
-const uint16_t VERTICAL_BLANK_SCAN_LINE_MAX = 0x99;
-const int MIN_OAM_MODE_CYCLES = 80;
+const int OAM_MODE_CYCLES = 80;
 const int MIN_LCD_TRANSFER_CYCLES = 172;
 const int VBLANK_CYCLES = 4560;
-static constexpr uint8_t START_VBLANK = 144;
+static constexpr uint8_t VERTICAL_BLANK_SCAN_LINE = 144;
+static constexpr uint8_t VERTICAL_BLANK_SCAN_LINE_MAX = 153;
 
 enum GpuMode
 {
@@ -28,6 +29,18 @@ enum GpuMode
 	V_BLANK = 1,
 	OAM = 2,
 	LCD_TX = 3,
+};
+
+enum LcdCTrl : uint8_t
+{
+	LCD_DISPLAY = 7,
+	WIN_TILE_MAP_DISPLAY = 6,
+	WIN_DISPLAY = 5,
+	BG_WIN_TILE_DATA_SELECT = 4,
+	BG_TILE_MAP_DISPLAY = 3,
+	OBJ_SIZE = 2,
+	OBJ_DISPLAY = 1,
+	BG_WIN_PRIORITY = 0,
 };
 
 class Gpu
@@ -41,8 +54,16 @@ public:
 		scanline_ = 0;
 	}
 
+	void isLcdEnable() {
+        uint8_t lcdCtrl = cpu_.getMemory().read8bit(LCD_DISPLAY_CTRL);
+		if (isBitSet(lcdCtrl, LcdCTrl::LCD_DISPLAY)) {
+			lcdEnable_ = true;
+		}
+	}
+
 	void updateGpu() {
-		if (lcdEnable_) {
+		//std::cout << "scanline: " << std::dec << scanline_ <<  std::endl;
+		if (lcdEnable_ == true) {
 			gpuCycle_ += cpu_.tickCount_;
 			switch (gpuMode_) {
 				case GpuMode::H_BLANK:
@@ -71,7 +92,7 @@ public:
 		else {
 			clearBit(lcdStatus, 2);
 		}
-		cpu_.getMemory().write8bit(lcdStatus, LCDC_STATUS_ADDR);
+		cpu_.getMemory().write8bit(LCDC_STATUS_ADDR, lcdStatus);
 	}
 
 	void hblank() {
@@ -81,7 +102,7 @@ public:
 			scanline_ = cpu_.getMemory().read8bit(LY_ADDR);
 			cpu_.getMemory().write8bit(LY_ADDR, ++scanline_);
 			compareScanline();
-			if (scanline_ >= START_VBLANK) {
+			if (scanline_ >= VERTICAL_BLANK_SCAN_LINE) {
 				gpuMode_ = GpuMode::V_BLANK;
 
 				//set lcd status to vblank
@@ -120,9 +141,11 @@ public:
 			if (scanline_ < VERTICAL_BLANK_SCAN_LINE_MAX) {
 				cpu_.getMemory().write8bit(LY_ADDR, ++scanline_);
 			}
+			compareScanline();
 		}
 
         if (gpuCycle_ >= VBLANK_CYCLES) {
+			vblanckCycle_ = 0;
 		    gpuCycle_ = 0;
 			gpuMode_ = GpuMode::OAM;
 			uint8_t lcd = cpu_.getMemory().read8bit(LCDC_STATUS_ADDR);
@@ -140,31 +163,55 @@ public:
 		}
 	}
 
-	void oam() {
+	void oam()
+	{
+		if (gpuCycle_ >= OAM_MODE_CYCLES) {
+			gpuCycle_ -= OAM_MODE_CYCLES;
 
+			gpuMode_ =  GpuMode::LCD_TX;
+			uint8_t lcd = cpu_.getMemory().read8bit(LCDC_STATUS_ADDR);
+			setBit(lcd, 0);
+			setBit(lcd, 1);
+			cpu_.getMemory().write8bit(LCDC_STATUS_ADDR, lcd);
+		}
 	}
 
-	void lcdTransfert() {
+	void lcdTransfert()
+	{
+		if (gpuCycle_ >= MIN_LCD_TRANSFER_CYCLES) {
+			gpuCycle_ -= MIN_LCD_TRANSFER_CYCLES;
 
+			gpuMode_ = GpuMode::H_BLANK;
+
+			//display rendering
+
+			uint8_t lcd = cpu_.getMemory().read8bit(LCDC_STATUS_ADDR);
+			clearBit(lcd, 0);
+			clearBit(lcd, 1);
+			cpu_.getMemory().write8bit(LCDC_STATUS_ADDR, lcd);
+			if (isBitSet(lcd, 3)) {
+				cpu_.requestInterrupt(InterruptType::LCDC);
+			}
+		}
 	}
 
-private:
-	Z80Cpu &cpu_;
-	SDL_Window *window;
-	SDL_Surface *screenSurface;
-	SDL_Texture *texture;
-	SDL_Renderer *renderer;
-	unsigned int *pixels;
+	private:
+		Z80Cpu &cpu_;
+		SDL_Window *window;
+		SDL_Surface *screenSurface;
+		SDL_Texture *texture;
+		SDL_Renderer *renderer;
+		unsigned int *pixels;
 
-	SDL_Window *window_d;
-	SDL_Surface *screenSurface_d;
-	SDL_Texture *texture_d;
-	SDL_Renderer *renderer_d;
-	unsigned int *pixels_d;
+		SDL_Window *window_d;
+		SDL_Surface *screenSurface_d;
+		SDL_Texture *texture_d;
+		SDL_Renderer *renderer_d;
+		unsigned int *pixels_d;
 
-	bool lcdEnable_ = true;
-	uint32_t gpuCycle_ = 0;
-	enum GpuMode gpuMode_;
-	uint16_t scanline_ = 0;
-	uint32_t vblanckCycle_ = 0;
-};
+		bool lcdEnable_ = true;
+		uint32_t gpuCycle_ = 0;
+		enum GpuMode gpuMode_;
+		uint16_t scanline_ = 0;
+		uint32_t vblanckCycle_ = 0;
+	};

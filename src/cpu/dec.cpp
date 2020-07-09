@@ -41,8 +41,10 @@ void Z80Cpu::dec_h_0x25()
 
 void Z80Cpu::dec_hl_addr_0x35()
 {
-    tickCount_ += 12;
-    mmu_.memoperation(regs_.hl, -1);
+    uint8_t value = getMemory().read8bit(regs_.hl);
+    dec8BitRegister(value);
+    getMemory().write8bit(regs_.hl, value);
+    tickCount_ += 8;
 }
 
 void Z80Cpu::dec_bc_0x0b()

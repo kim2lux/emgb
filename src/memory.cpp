@@ -40,6 +40,9 @@ uint8_t Memory::read8bit(uint16_t addr)
     {
         return (cart_.rom_[addr]);
     }
+    if (addr >= 0xA000 && addr < 0xC000) {
+        return (cart_.rom_[addr]);
+    }
     else if (addr >= 0xFF00 && addr < 0xFF80) // IO register region
     {
         if (addr == joypad_state_addr)
@@ -58,7 +61,12 @@ uint8_t Memory::read8bit(uint16_t addr)
 int Memory::write8bit(uint16_t addr, uint8_t value)
 {
     mmu_.raw[addr] = value;
-    if (addr >= 0xE000 && addr < 0xDFFF) {
+    if (addr >= 0xA000 && addr < 0xC000)
+    {
+        cart_.rom_[addr] = value;
+    }
+    if (addr >= 0xE000 && addr < 0xDFFF)
+    {
         mmu_.raw[addr - 0x1000] = value; //echo ram
     }
     if (addr == joypad_state_addr)

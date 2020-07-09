@@ -21,14 +21,14 @@ void Z80Cpu::ld_a_addr_0xea() {
 void Z80Cpu::ld_hl_sp_r_0xf8() {
     tickCount_ += 12;
     char value = mmu_.read8bit(regs_.pc);
-    uint16_t res = regs_.sp + value;
+    uint16_t res = (regs_.sp + value);
 
     clear_flags();
-    if (((regs_.sp & res & value) & 0x100) == 0x100) {
+    if (((regs_.sp ^ res ^ value) & 0x100) == 0x100) {
         set_carry_flag();
     }
 
-    if (((regs_.sp & res & value) & 0x10) == 0x10) {
+    if (((regs_.sp ^ res ^ value) & 0x10) == 0x10) {
         set_half_carry_flag();
     }
 

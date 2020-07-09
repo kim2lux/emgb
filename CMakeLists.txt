@@ -8,6 +8,8 @@ set(EXEC_GB_NAME gameboy)
 # includes cmake/FindSDL2.cmake
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
+set(OpenGL_GL_PREFERENCE GLVND)
+
 find_package(SDL2 REQUIRED)
 find_package(OpenGL REQUIRED)
 include_directories(${SDL2_INCLUDE_DIR} ${OPENGL_INCLUDE_DIR} ./include)

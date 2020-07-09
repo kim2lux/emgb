@@ -20,6 +20,7 @@ void Z80Cpu::pop_af0xf1()
 {
     tickCount_ += 12;
     regs_.af = mmu_.pop16(regs_.sp);
+    regs_.f = regs_.f & 0xf0;
 }
 
 void Z80Cpu::push_af0xf5()
