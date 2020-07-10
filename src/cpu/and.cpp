@@ -1,6 +1,7 @@
 #include "cpu.hpp"
 
 void Z80Cpu::cp8bit(uint8_t & reg, uint8_t value) {
+    tickCount_ += 4;
 	clear_flags();
 
     set_neg_flag();
@@ -50,6 +51,7 @@ void Z80Cpu::cp_hl() {
 
 void Z80Cpu::or8bit(uint8_t & reg, uint8_t value) {
 	reg = reg | value;
+    tickCount_ += 4;
 
 	clear_flags();
 	if (reg == 0x00) {
@@ -92,6 +94,8 @@ void Z80Cpu::or_hl() {
 
 void Z80Cpu::xor8bit(uint8_t & reg, uint8_t value) {
 	reg = reg ^ value;
+
+    tickCount_ += 4;
 
 	clear_flags();
 	if (reg == 0x00) {

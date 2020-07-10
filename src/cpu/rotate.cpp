@@ -8,39 +8,33 @@ void Z80Cpu::nop_0x00()
 void Z80Cpu::daa_0x27() 
 {
     tickCount_ += 4;
-    int a = regs_.a;
+    uint8_t reg = regs_.a;
+    uint16_t upd;
+    upd = isFlagSet(Flag::CARRY_FLAG) ? 0x60 : 0x00;
 
-	if (isFlagSet(Flag::NEG_FLAG)) {
-		if (isFlagSet(Flag::HALFC_FLAG)) {
-			a = (a - 6) & 0xFF;
-		}
-		if (isFlagSet(Flag::CARRY_FLAG)) {
-			a -= 0x60;
-		}
-	} else {
+    if (isFlagSet(Flag::HALFC_FLAG) || (!isFlagSet(Flag::NEG_FLAG) && ((reg & 0x0F) > 9))) {
+        upd |= 0x06;
+    }
 
-		if (isFlagSet(Flag::HALFC_FLAG) || ((a & 0xF) > 9)) {
-			a += 0x06;
-		}
-		if ((isFlagSet(Flag::CARRY_FLAG)) || (a > 0x9F)) {
-			a += 0x60;
-		}
-	}
+    if (isFlagSet(Flag::CARRY_FLAG) || (!isFlagSet(Flag::NEG_FLAG) && (reg > 0x99))) {
+        upd |= 0x60;
+    }
 
-	clear_half_carry_flag();
-    clear_zero_flag();
+    if (isFlagSet(Flag::NEG_FLAG)) {
+        reg = static_cast<uint8_t>(reg - upd);
+    } else {
+        reg = static_cast<uint8_t>(reg + upd);
+    }
 
-	if ((a & 0x100) == 0x100) {
-		set_carry_flag();
-	}
+    if (((upd << 2) & 0x100) != 0) {
+        set_carry_flag();
+    }
 
-	a &= 0xFF;
-
-	if (a == 0) {
-		set_carry_flag();
-	}
-
-	regs_.a = a;
+    clear_half_carry_flag();
+    if (reg == 0) {
+        set_zero_flag();
+    }
+    regs_.a = static_cast<uint8_t>(reg);
 }
 
 void Z80Cpu::rlca_0x07() {

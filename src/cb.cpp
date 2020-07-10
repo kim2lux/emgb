@@ -1,7 +1,7 @@
 #include "cpu.hpp"
 #include "memory.hpp"
 //https://cturt.github.io/cinoop.html
-
+#include "utils.h"
 #define registers cpu.regs_
 
 #define FLAGS_ZERO (1 << 7)
@@ -27,25 +27,21 @@ struct extendedInstruction
 
 extern const unsigned char extendedInstructionTicks[256];
 
-static unsigned char rlc(unsigned char value, Z80Cpu &cpu)
+static unsigned char rlc(uint8_t value, Z80Cpu &cpu)
 {
-    int carry = (value & 0x80) >> 7;
-
-    if (value & 0x80)
-        FLAGS_SET(FLAGS_CARRY);
-    else
-        FLAGS_CLEAR(FLAGS_CARRY);
-
+    uint8_t carry = value & 0x80;
     value <<= 1;
-    value += carry;
 
-    if (value)
-        FLAGS_CLEAR(FLAGS_ZERO);
-    else
-        FLAGS_SET(FLAGS_ZERO);
-
-    FLAGS_CLEAR(FLAGS_NEGATIVE | FLAGS_HALFCARRY);
-
+    cpu.clear_flags();
+    if (carry != 0x00) {
+        cpu.set_carry_flag();
+        setBit(value, 0);
+    }
+    else {
+        clearBit(value, 0);
+    }
+    if (value == 0)
+        cpu.set_zero_flag();
     return value;
 }
 
@@ -141,22 +137,26 @@ static unsigned char sla(unsigned char value, Z80Cpu &cpu)
     return value;
 }
 
-static unsigned char sra(unsigned char value, Z80Cpu &cpu)
+static uint8_t sra(uint8_t value, Z80Cpu &cpu)
 {
-    if (value & 0x01)
-        FLAGS_SET(FLAGS_CARRY);
-    else
-        FLAGS_CLEAR(FLAGS_CARRY);
+    uint8_t fistBit = value & 0x01;
+    uint8_t lastBit = value & 0x80;
 
-    value = (value & 0x80) | (value >> 1);
+    value >>= 1;
 
-    if (value)
-        FLAGS_CLEAR(FLAGS_ZERO);
-    else
-        FLAGS_SET(FLAGS_ZERO);
-
-    FLAGS_CLEAR(FLAGS_NEGATIVE | FLAGS_HALFCARRY);
-
+    if (lastBit != 0) {
+        setBit(value, 7);
+    }
+    else {
+        clearBit(value, 7);
+    }
+    cpu.clear_flags();
+    if (fistBit == 0x01) {
+        cpu.set_carry_flag();
+    }
+    if (value == 0x00) {
+        cpu.set_zero_flag();
+    }
     return value;
 }
 
@@ -229,7 +229,11 @@ void rlc_h(Z80Cpu &cpu) { registers.h = rlc(registers.h, cpu); }
 void rlc_l(Z80Cpu &cpu) { registers.l = rlc(registers.l, cpu); }
 
 // 0x06
-void rlc_hlp(Z80Cpu &cpu) { cpu.getMemory().write8bit(registers.hl, rlc(cpu.getMemory().read8bit(registers.hl), cpu)); }
+void rlc_hlp(Z80Cpu &cpu) {
+    uint8_t value = cpu.getMemory().read8bit(registers.hl);
+    value = rlc(value, cpu);
+    cpu.getMemory().write8bit(registers.hl, value);
+}
 
 // 0x07
 void rlc_a(Z80Cpu &cpu) { registers.a = rlc(registers.a, cpu); }
@@ -352,7 +356,7 @@ void sra_l(Z80Cpu &cpu) { registers.l = sra(registers.l, cpu); }
 void sra_hlp(Z80Cpu &cpu)
 {
     uint8_t value = cpu.getMemory().read8bit(cpu.regs_.hl);
-    sra(value, cpu);
+    value = sra(value, cpu);
     cpu.getMemory().write8bit(registers.hl, value);
 }
 
@@ -657,7 +661,11 @@ void res_1_h(Z80Cpu &cpu) { registers.h &= ~(1 << 1); }
 void res_1_l(Z80Cpu &cpu) { registers.l &= ~(1 << 1); }
 
 // 0x8e
-void res_1_hlp(Z80Cpu &cpu) { cpu.getMemory().write8bit(registers.hl, registers.hl & ~(1 << 1)); }
+void res_1_hlp(Z80Cpu &cpu) {
+    uint8_t value = cpu.getMemory().read8bit(registers.hl);
+    value &= ~(1 << 1);
+    cpu.getMemory().write8bit(registers.hl, value);
+}
 
 // 0x8f
 void res_1_a(Z80Cpu &cpu) { registers.a &= ~(1 << 1); }
@@ -681,7 +689,11 @@ void res_2_h(Z80Cpu &cpu) { registers.h &= ~(1 << 2); }
 void res_2_l(Z80Cpu &cpu) { registers.l &= ~(1 << 2); }
 
 // 0x96
-void res_2_hlp(Z80Cpu &cpu) { cpu.getMemory().write8bit(registers.hl, registers.hl & ~(1 << 2)); }
+void res_2_hlp(Z80Cpu &cpu) {
+    uint8_t value = cpu.getMemory().read8bit(registers.hl);
+    value &= ~(1 << 2);
+    cpu.getMemory().write8bit(registers.hl, value);
+}
 
 // 0x97
 void res_2_a(Z80Cpu &cpu) { registers.a &= ~(1 << 2); }
@@ -705,7 +717,11 @@ void res_3_h(Z80Cpu &cpu) { registers.h &= ~(1 << 3); }
 void res_3_l(Z80Cpu &cpu) { registers.l &= ~(1 << 3); }
 
 // 0x9e
-void res_3_hlp(Z80Cpu &cpu) { cpu.getMemory().write8bit(registers.hl, registers.hl & ~(1 << 3)); }
+void res_3_hlp(Z80Cpu &cpu) {
+    uint8_t value = cpu.getMemory().read8bit(registers.hl);
+    value &= ~(1 << 3);
+    cpu.getMemory().write8bit(registers.hl, value);
+}
 
 // 0x9f
 void res_3_a(Z80Cpu &cpu) { registers.a &= ~(1 << 3); }
@@ -729,7 +745,11 @@ void res_4_h(Z80Cpu &cpu) { registers.h &= ~(1 << 4); }
 void res_4_l(Z80Cpu &cpu) { registers.l &= ~(1 << 4); }
 
 // 0xa6
-void res_4_hlp(Z80Cpu &cpu) { cpu.getMemory().write8bit(registers.hl, registers.hl & ~(1 << 4)); }
+void res_4_hlp(Z80Cpu &cpu) {
+    uint8_t value = cpu.getMemory().read8bit(registers.hl);
+    value &= ~(1 << 4);
+    cpu.getMemory().write8bit(registers.hl, value);
+}
 
 // 0xa7
 void res_4_a(Z80Cpu &cpu) { registers.a &= ~(1 << 4); }
@@ -753,7 +773,11 @@ void res_5_h(Z80Cpu &cpu) { registers.h &= ~(1 << 5); }
 void res_5_l(Z80Cpu &cpu) { registers.l &= ~(1 << 5); }
 
 // 0xae
-void res_5_hlp(Z80Cpu &cpu) { cpu.getMemory().write8bit(registers.hl, registers.hl & ~(1 << 5)); }
+void res_5_hlp(Z80Cpu &cpu) {
+    uint8_t value = cpu.getMemory().read8bit(registers.hl);
+    value &= ~(1 << 5);
+    cpu.getMemory().write8bit(registers.hl, value);
+}
 
 // 0xaf
 void res_5_a(Z80Cpu &cpu) { registers.a &= ~(1 << 5); }
@@ -777,7 +801,11 @@ void res_6_h(Z80Cpu &cpu) { registers.h &= ~(1 << 6); }
 void res_6_l(Z80Cpu &cpu) { registers.l &= ~(1 << 6); }
 
 // 0xb6
-void res_6_hlp(Z80Cpu &cpu) { cpu.getMemory().write8bit(registers.hl, registers.hl & ~(1 << 6)); }
+void res_6_hlp(Z80Cpu &cpu) {
+    uint8_t value = cpu.getMemory().read8bit(registers.hl);
+    value &= ~(1 << 6);
+    cpu.getMemory().write8bit(registers.hl, value);
+}
 
 // 0xb7
 void res_6_a(Z80Cpu &cpu) { registers.a &= ~(1 << 6); }
@@ -801,7 +829,11 @@ void res_7_h(Z80Cpu &cpu) { registers.h &= ~(1 << 7); }
 void res_7_l(Z80Cpu &cpu) { registers.l &= ~(1 << 7); }
 
 // 0xbe
-void res_7_hlp(Z80Cpu &cpu) { cpu.getMemory().write8bit(registers.hl, cpu.getMemory().read8bit(registers.hl) & ~(1 << 7)); }
+void res_7_hlp(Z80Cpu &cpu) {
+    uint8_t value = cpu.getMemory().read8bit(registers.hl);
+    value &= ~(1 << 7);
+    cpu.getMemory().write8bit(registers.hl, value);
+}
 
 // 0xbf
 void res_7_a(Z80Cpu &cpu) { registers.a &= ~(1 << 7); }
