@@ -1,5 +1,5 @@
 #include "cpu.hpp"
-
+#include "utils.h"
 void Z80Cpu::nop_0x00()
 {
 	tickCount_ += 4;
@@ -9,30 +9,29 @@ void Z80Cpu::daa_0x27()
 {
     tickCount_ += 4;
     uint8_t reg = regs_.a;
-    uint16_t upd;
-    upd = isFlagSet(Flag::CARRY_FLAG) ? 0x60 : 0x00;
+    uint16_t upd = isBitSet(regs_.f, 4) ? 0x60 : 0x00;
 
-    if (isFlagSet(Flag::HALFC_FLAG) || (!isFlagSet(Flag::NEG_FLAG) && ((reg & 0x0F) > 9))) {
+    if (isBitSet(regs_.f, 5) || (!isBitSet(regs_.f, 6) && ((reg & 0x0F) > 9))) {
         upd |= 0x06;
     }
 
-    if (isFlagSet(Flag::CARRY_FLAG) || (!isFlagSet(Flag::NEG_FLAG) && (reg > 0x99))) {
+    if (isBitSet(regs_.f, 4) || (!isBitSet(regs_.f, 6) && (reg > 0x99))) {
         upd |= 0x60;
     }
 
-    if (isFlagSet(Flag::NEG_FLAG)) {
+    if (isBitSet(regs_.f, 6)) {
         reg = static_cast<uint8_t>(reg - upd);
     } else {
         reg = static_cast<uint8_t>(reg + upd);
     }
 
     if (((upd << 2) & 0x100) != 0) {
-        set_carry_flag();
+        setBit(regs_.f, 4);
     }
 
-    clear_half_carry_flag();
+    clearBit(regs_.f, 5);
     if (reg == 0) {
-        set_zero_flag();
+        setBit(regs_.f, 7);
     }
     regs_.a = static_cast<uint8_t>(reg);
 }

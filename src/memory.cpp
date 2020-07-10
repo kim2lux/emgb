@@ -61,14 +61,14 @@ uint8_t Memory::read8bit(uint16_t addr)
 int Memory::write8bit(uint16_t addr, uint8_t value)
 {
     mmu_.raw[addr] = value;
+    if (addr == 0xd800) {
+        std::cout << "write at d8000" << std::hex << (int32_t)value << std::endl;
+    }
     if (addr >= 0xA000 && addr < 0xC000)
     {
         cart_.rom_[addr] = value;
     }
-    if (addr >= 0xE000 && addr < 0xDFFF)
-    {
-        mmu_.raw[addr - 0x1000] = value; //echo ram
-    }
+
     if (addr == joypad_state_addr)
     {
         std::cout << "request input key: " << std::hex << value << std::endl;

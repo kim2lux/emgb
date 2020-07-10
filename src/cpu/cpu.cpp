@@ -33,7 +33,7 @@ bool Z80Cpu::isFlagSet(Flag f);
 
 void Z80Cpu::initRegister()
 {
-    regs_.af = 0x01b0;
+    regs_.af = 0x11b0;
     regs_.bc = 0x0013;
     regs_.de = 0x00d8;
     regs_.hl = 0x014d;

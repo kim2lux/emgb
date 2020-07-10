@@ -121,7 +121,6 @@ void Z80Cpu::jmp_nz0xc2()
     }
     else
     {
-        regs_.pc += 2;
         tickCount_ += 12;
     }
 }
@@ -132,10 +131,10 @@ void Z80Cpu::jmp_nc0xd2()
     {
         tickCount_ += 16;
         regs_.pc = mmu_.read16bit(regs_.pc);
+        fjmp_ = true;
     }
     else
     {
-        regs_.pc += 2;
         tickCount_ += 12;
     }
 }
@@ -169,7 +168,6 @@ void Z80Cpu::jmp_c0xda()
     }
     else
     {
-        fjmp_ = true;
         tickCount_ += 12;
     }
 }

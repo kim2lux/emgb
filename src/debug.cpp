@@ -37,10 +37,10 @@ int IMGUI_debugger(Z80Cpu &cpu)
 
 	while (done == false)
 	{
-		debug = true;
-		if (cpu.regs_.pc == 0xc2b4)
-			start = 1;
-		while (debug == false && start == 1)
+		debug = false;
+		if (cpu.regs_.pc == 0xdef8 &&  cpu.regs_.af == 0x1280 && cpu.getMemory().read8bit(cpu.regs_.pc) == 0xc2)
+		    start = 1;
+		while (debug == true && start == 1)
 		{
 			ImGui_ImplSdl_NewFrame(window);
 			{
@@ -111,13 +111,13 @@ int IMGUI_debugger(Z80Cpu &cpu)
 		cpu.getMemory().joypad_.handleEvent(event, cpu);
 		cpu.updateTimer();
 		exec = cpu.getMemory().read8bit(cpu.regs_.pc++);
-		//std::cout << "pc: " << std::hex << (int32_t) (cpu.regs_.pc - 1) << ": " << std::hex << (uint16_t)exec << " -> " << cpu.opcodes_[exec].value << std::endl;
 		cpu.opcodes_[exec].opFunc();
 		if (cpu.fjmp_ == false)
 			cpu.regs_.pc += cpu.opcodes_[exec].size;
 		cpu.fjmp_ = false;
 		cpu.processRequestInterrupt();
 		gpu.updateGpu();
+		//std::cout << "pc: " << std::hex << (int32_t) (cpu.regs_.pc) << ": " << std::hex << (uint16_t)exec << " -> " << cpu.opcodes_[exec].value << std::endl;
 	}
 	// Cleanup
 	ImGui_ImplSdl_Shutdown();
