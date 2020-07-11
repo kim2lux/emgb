@@ -88,7 +88,6 @@ void Z80Cpu::updateTimer()
                 timer_.tima_ = mmu_.read8bit(Timer::tma_addr);
                 mmu_.write8bit(Timer::tima_addr, timer_.tima_); // update tma value to tima
                 setBit(interrupt_.interruptRequest_, InterruptType::TIMER);
-                std::cout << "Timer interrupt" << std::endl;
             }
             else
             {
@@ -405,7 +404,7 @@ Z80Cpu::Z80Cpu(Memory &memory) : mmu_(memory)
         {0xdf, "rst_18_0xdf", std::bind(&Z80Cpu::rst_18_0xdf, this), 0},
         {0xe0, "ld a to addr", std::bind(&Z80Cpu::ldd_addr_a_80xe0, this), 1},
         {0xe1, "pop_hl", std::bind(&Z80Cpu::pop_hl0xe1, this), 0},
-        {0xe2, "ld_a_to_c", std::bind(&Z80Cpu::ld_a_to_c0xe2, this), 1},
+        {0xe2, "ld_a_to_c", std::bind(&Z80Cpu::ld_a_to_c0xe2, this), 0},
         {0xe3, "no_operation", std::bind(&Z80Cpu::no_operation, this), 0},
         {0xe4, "no_operation", std::bind(&Z80Cpu::no_operation, this), 0},
         {0xe5, "push_hl", std::bind(&Z80Cpu::push_hl0xe5, this), 0},
@@ -421,7 +420,7 @@ Z80Cpu::Z80Cpu(Memory &memory) : mmu_(memory)
         {0xef, "rst_28_0xef", std::bind(&Z80Cpu::rst_28_0xef, this), 0},
         {0xf0, "ldh_a_val_8", std::bind(&Z80Cpu::ldh_a_val_80xf0, this), 1},
         {0xf1, "pop_af", std::bind(&Z80Cpu::pop_af0xf1, this), 0},
-        {0xf2, "ld_addr_c_to_a", std::bind(&Z80Cpu::ld_addr_c_to_a0xf2, this), 1},
+        {0xf2, "ld_addr_c_to_a", std::bind(&Z80Cpu::ld_addr_c_to_a0xf2, this), 0},
         {0xf3, "ime_di", std::bind(&Z80Cpu::ime_di0xf3, this), 0},
         {0xf4, "no_operation", std::bind(&Z80Cpu::no_operation, this), 0},
         {0xf5, "push_af", std::bind(&Z80Cpu::push_af0xf5, this), 0},

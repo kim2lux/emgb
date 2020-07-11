@@ -39,6 +39,7 @@ public:
 		testScanline_ = 0x89;
 		interupt_ = 0;
 	}
+	void dmaTransfer(uint8_t value);
 	Cartridge &cart_;
 	Joypad &joypad_;
 	u_mmu mmu_;

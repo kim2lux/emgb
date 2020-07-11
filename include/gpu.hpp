@@ -45,64 +45,117 @@ enum LcdCTrl : uint8_t
 
 class Gpu
 {
+private:
+	uint16_t backgroudMap_;
+	uint16_t windowMap_;
+	uint16_t tileData_;
+	uint8_t lcdCtrl_;
+	uint8_t scY_;
+	uint8_t scX_;
+	bool unsign_;
+
 public:
+	void simpleRender();
+	void rendering();
+	void render();
+	void initDisplay();
+	void renderBackground();
+	void renderWindow();
+	void renderTile(int32_t idx, uint32_t posY, uint32_t posX);
+	void updateGpuRegister();
+
 	Gpu(Z80Cpu &cpu) : cpu_(cpu)
 	{
 		gpuMode_ = GpuMode::H_BLANK;
 		lcdEnable_ = true;
 		gpuCycle_ = 0;
 		scanline_ = 0;
+		initDisplay();
 	}
 
-	void isLcdEnable() {
-        uint8_t lcdCtrl = cpu_.getMemory().read8bit(LCD_DISPLAY_CTRL);
-		if (isBitSet(lcdCtrl, LcdCTrl::LCD_DISPLAY)) {
+	bool isLcdEnable()
+	{
+		uint8_t lcdCtrl = cpu_.getMemory().read8bit(LCD_DISPLAY_CTRL);
+		lcdEnable_ = false;
+		if (isBitSet(lcdCtrl, LcdCTrl::LCD_DISPLAY))
+		{
 			lcdEnable_ = true;
 		}
+		return (lcdEnable_);
 	}
 
-	void updateGpu() {
-		//std::cout << "scanline: " << std::dec << scanline_ <<  std::endl;
-		if (lcdEnable_ == true) {
-			gpuCycle_ += cpu_.tickCount_;
-			switch (gpuMode_) {
-				case GpuMode::H_BLANK:
-				hblank(); break;
-				case GpuMode::V_BLANK:
-				vblank(); break;
-				case GpuMode::OAM:
-				oam(); break;
-				case GpuMode::LCD_TX:
-				lcdTransfert(); break;
+	void disableLcd()
+	{
+		lcdEnable_ = false;
+		gpuCycle_ = 0;
+		vblanckCycle_ = 0;
+		cpu_.getMemory().write8bit(LY_ADDR, 0);
+
+		uint8_t lcdc = cpu_.getMemory().read8bit(LCDC_STATUS_ADDR);
+		cpu_.getMemory().write8bit(LCDC_STATUS_ADDR, lcdc & 0xFC);
+		gpuMode_ = GpuMode::H_BLANK;
+	}
+
+	void updateGpu(uint8_t opcodeCycle)
+	{
+		isLcdEnable();
+		if (isLcdEnable())
+		{
+			gpuCycle_ += opcodeCycle;
+			switch (gpuMode_)
+			{
+			case GpuMode::H_BLANK:
+				hblank();
+				break;
+			case GpuMode::V_BLANK:
+				vblank(opcodeCycle);
+				break;
+			case GpuMode::OAM:
+				oam();
+				break;
+			case GpuMode::LCD_TX:
+				lcdTransfert();
+				break;
 			}
+		}
+		else
+		{
+			disableLcd();
 		}
 	}
 
-	void compareScanline() {
+	void compareScanline()
+	{
 		scanline_ = cpu_.getMemory().read8bit(LY_ADDR);
 		uint8_t scanlineCompare = cpu_.getMemory().read8bit(LYC_ADDR);
 		uint8_t lcdStatus = cpu_.getMemory().read8bit(LCDC_STATUS_ADDR);
 
-		if (scanline_ == scanlineCompare) {
+		if (scanline_ == scanlineCompare)
+		{
 			setBit(lcdStatus, 2); //set coincidence flag
-			if (isBitSet(lcdStatus, 6)) {  // request interrupt on coincidence flag ?
-			    cpu_.requestInterrupt(InterruptType::LCDC);
+			if (isBitSet(lcdStatus, 6))
+			{ // request interrupt on coincidence flag ?
+				cpu_.requestInterrupt(InterruptType::LCDC);
 			}
 		}
-		else {
+		else
+		{
 			clearBit(lcdStatus, 2);
 		}
 		cpu_.getMemory().write8bit(LCDC_STATUS_ADDR, lcdStatus);
 	}
 
-	void hblank() {
-		if (gpuCycle_ >= MIN_HBLANK_MODE_CYCLES) {
+	void hblank()
+	{
+		if (gpuCycle_ >= MIN_HBLANK_MODE_CYCLES)
+		{
 			gpuCycle_ -= MIN_HBLANK_MODE_CYCLES;
 
 			scanline_ = cpu_.getMemory().read8bit(LY_ADDR);
 			cpu_.getMemory().write8bit(LY_ADDR, ++scanline_);
 			compareScanline();
-			if (scanline_ >= VERTICAL_BLANK_SCAN_LINE) {
+			if (scanline_ == VERTICAL_BLANK_SCAN_LINE)
+			{
 				gpuMode_ = GpuMode::V_BLANK;
 
 				//set lcd status to vblank
@@ -110,65 +163,73 @@ public:
 				setBit(lcd, 0);
 				cpu_.getMemory().write8bit(LCDC_STATUS_ADDR, lcd);
 
-                //request vblank interrupt
+				//request vblank interrupt
 				cpu_.requestInterrupt(InterruptType::VBLANCK);
 				// request interrupt on hblank flag ?
-				if (isBitSet(lcd, 4)) { 
+				if (isBitSet(lcd, 4))
+				{
 					cpu_.requestInterrupt(InterruptType::LCDC);
 				}
 			}
-			else {
+			else
+			{
 				gpuMode_ = GpuMode::OAM;
 				uint8_t lcd = cpu_.getMemory().read8bit(LCDC_STATUS_ADDR);
 				setBit(lcd, 1);
 				clearBit(lcd, 0);
 				cpu_.getMemory().write8bit(LCDC_STATUS_ADDR, lcd);
-                // request interrupt on OAM flag ?
-				if (isBitSet(lcd, 5)) { 
+				// request interrupt on OAM flag ?
+				if (isBitSet(lcd, 5))
+				{
 					cpu_.requestInterrupt(InterruptType::LCDC);
 				}
 			}
 		}
 	}
 
-	void vblank() {
-		vblanckCycle_ += cpu_.tickCount_;
+	void vblank(uint16_t cycle)
+	{
+		vblanckCycle_ += cycle;
 
-        scanline_ = cpu_.getMemory().read8bit(LY_ADDR);
-        // keep inc scanline and call LCD interrupt
-		if (vblanckCycle_ >= MAX_VIDEO_CYCLES) {
+		scanline_ = cpu_.getMemory().read8bit(LY_ADDR);
+		// keep inc scanline and call LCD interrupt
+		if (vblanckCycle_ >= MAX_VIDEO_CYCLES)
+		{
 			vblanckCycle_ = 0;
-			if (scanline_ < VERTICAL_BLANK_SCAN_LINE_MAX) {
+			if (scanline_ < VERTICAL_BLANK_SCAN_LINE_MAX)
+			{
 				cpu_.getMemory().write8bit(LY_ADDR, ++scanline_);
 			}
 			compareScanline();
 		}
 
-        if (gpuCycle_ >= VBLANK_CYCLES) {
+		if (gpuCycle_ >= VBLANK_CYCLES)
+		{
 			vblanckCycle_ = 0;
-		    gpuCycle_ = 0;
+			gpuCycle_ = 0;
 			gpuMode_ = GpuMode::OAM;
 			uint8_t lcd = cpu_.getMemory().read8bit(LCDC_STATUS_ADDR);
 
 			cpu_.getMemory().write8bit(LY_ADDR, 0);
 			compareScanline();
-			setBit(lcd, 1); //set OAM mode
+			setBit(lcd, 1);	  //set OAM mode
 			clearBit(lcd, 0); //clear vblank
 			// request interrupt on OAM flag ?
-			if (isBitSet(lcd, 5)) {
+			if (isBitSet(lcd, 5))
+			{
 				cpu_.requestInterrupt(InterruptType::LCDC);
 			}
 			cpu_.getMemory().write8bit(LCDC_STATUS_ADDR, lcd);
-
 		}
 	}
 
 	void oam()
 	{
-		if (gpuCycle_ >= OAM_MODE_CYCLES) {
+		if (gpuCycle_ >= OAM_MODE_CYCLES)
+		{
 			gpuCycle_ -= OAM_MODE_CYCLES;
 
-			gpuMode_ =  GpuMode::LCD_TX;
+			gpuMode_ = GpuMode::LCD_TX;
 			uint8_t lcd = cpu_.getMemory().read8bit(LCDC_STATUS_ADDR);
 			setBit(lcd, 0);
 			setBit(lcd, 1);
@@ -178,40 +239,38 @@ public:
 
 	void lcdTransfert()
 	{
-		if (gpuCycle_ >= MIN_LCD_TRANSFER_CYCLES) {
+		if (gpuCycle_ >= MIN_LCD_TRANSFER_CYCLES)
+		{
 			gpuCycle_ -= MIN_LCD_TRANSFER_CYCLES;
 
 			gpuMode_ = GpuMode::H_BLANK;
 
 			//display rendering
+			rendering();
 
 			uint8_t lcd = cpu_.getMemory().read8bit(LCDC_STATUS_ADDR);
 			clearBit(lcd, 0);
 			clearBit(lcd, 1);
 			cpu_.getMemory().write8bit(LCDC_STATUS_ADDR, lcd);
-			if (isBitSet(lcd, 3)) {
+			if (isBitSet(lcd, 3))
+			{
 				cpu_.requestInterrupt(InterruptType::LCDC);
 			}
 		}
 	}
 
-	private:
-		Z80Cpu &cpu_;
-		SDL_Window *window;
-		SDL_Surface *screenSurface;
-		SDL_Texture *texture;
-		SDL_Renderer *renderer;
-		unsigned int *pixels;
+	int32_t gpuCycle_ = 0;
 
-		SDL_Window *window_d;
-		SDL_Surface *screenSurface_d;
-		SDL_Texture *texture_d;
-		SDL_Renderer *renderer_d;
-		unsigned int *pixels_d;
+private:
+	Z80Cpu &cpu_;
+	SDL_Window *window_;
+	SDL_Surface *screenSurface_;
+	SDL_Texture *texture_;
+	SDL_Renderer *renderer_;
+	unsigned int *pixels_;
 
-		bool lcdEnable_ = true;
-		uint32_t gpuCycle_ = 0;
-		enum GpuMode gpuMode_;
-		uint16_t scanline_ = 0;
-		uint32_t vblanckCycle_ = 0;
-	};
+	bool lcdEnable_ = true;
+	enum GpuMode gpuMode_;
+	uint16_t scanline_ = 0;
+	uint32_t vblanckCycle_ = 0;
+};

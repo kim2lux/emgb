@@ -78,7 +78,9 @@ void Z80Cpu::ret_nz0xc0()
         tickCount_ += 20;
         regs_.pc = mmu_.pop16(regs_.sp);
     }
-    tickCount_ += 8;
+    else {
+        tickCount_ += 8;
+    }
 }
 
 void Z80Cpu::ret_nc0xd0()
@@ -88,7 +90,9 @@ void Z80Cpu::ret_nc0xd0()
         tickCount_ += 20;
         regs_.pc = mmu_.pop16(regs_.sp);
     }
-    tickCount_ += 8;
+    else {
+        tickCount_ += 8;
+    }
 }
 
 void Z80Cpu::ret_z0xc8()
@@ -98,7 +102,9 @@ void Z80Cpu::ret_z0xc8()
         tickCount_ += 20;
         regs_.pc = mmu_.pop16(regs_.sp);
     }
-    tickCount_ += 8;
+    else {
+        tickCount_ += 8;
+    }
 }
 
 void Z80Cpu::ret_c0xd8()
@@ -108,7 +114,9 @@ void Z80Cpu::ret_c0xd8()
         tickCount_ += 20;
         regs_.pc = mmu_.pop16(regs_.sp);
     }
-    tickCount_ += 8;
+    else {
+        tickCount_ += 8;
+    }
 }
 
 void Z80Cpu::jmp_nz0xc2()

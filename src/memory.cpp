@@ -1,6 +1,8 @@
-#include "GB.h"
 #include "memory.hpp"
 #include <iostream>
+#include "utils.h"
+static constexpr uint16_t OAM_REG_ADDR = 0xFF46;
+static constexpr uint16_t OAM_MEM_START = 0xFE00;
 
 void Memory::push16(uint16_t &stackPtr, uint16_t value)
 {
@@ -36,23 +38,19 @@ uint16_t Memory::read16bit(uint16_t addr)
 
 uint8_t Memory::read8bit(uint16_t addr)
 {
+    static uint8_t scanline = 0;
     if (addr < 0x8000) // cartridge region
     {
         return (cart_.rom_[addr]);
     }
-    if (addr >= 0xA000 && addr < 0xC000) {
-        return (cart_.rom_[addr]);
+    if (addr == 0xff44) {
+        return scanline++;
     }
     else if (addr >= 0xFF00 && addr < 0xFF80) // IO register region
     {
         if (addr == joypad_state_addr)
         {
             return (joypad_.padState());
-        }
-        else if (addr == scanline_value_addr)
-        {
-            testScanline_ += 1;
-            return testScanline_;
         }
     }
     return (mmu_.raw[addr]);
@@ -61,24 +59,29 @@ uint8_t Memory::read8bit(uint16_t addr)
 int Memory::write8bit(uint16_t addr, uint8_t value)
 {
     mmu_.raw[addr] = value;
-    if (addr == 0xd800) {
-        std::cout << "write at d8000" << std::hex << (int32_t)value << std::endl;
-    }
     if (addr >= 0xA000 && addr < 0xC000)
     {
         cart_.rom_[addr] = value;
     }
-
     if (addr == joypad_state_addr)
     {
-        std::cout << "request input key: " << std::hex << value << std::endl;
         joypad_.key_ = value;
+    }
+    if (addr == OAM_REG_ADDR) {
+        dmaTransfer(value);
     }
     if (addr == serial_data_addr)
     {
-        std::cout << (char)value << std::endl;
+        //std::cout << (char)value << std::endl;
     }
     return (0);
+}
+
+void Memory::dmaTransfer(uint8_t value) {
+    uint16_t srcAddr = value * 100;
+    for (uint16_t idx = 0; idx < 0x9f; ++idx) {
+        write8bit(OAM_MEM_START + idx, read8bit(srcAddr + idx));
+    }
 }
 
 uint8_t Memory::memoperation(uint16_t addr, int8_t value)

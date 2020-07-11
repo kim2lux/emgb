@@ -7,7 +7,12 @@
 #include <iostream>
 #include "joypad.hpp"
 #include "gpu.hpp"
+#include <chrono>
+#include <thread>
+const float DELAY_TIME = 1000.0f / 59.73f;
 
+const int MAX_CYCLES = 70224;
+const float FPS = 59.73f;
 int IMGUI_debugger(Z80Cpu &cpu)
 {
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
@@ -34,12 +39,16 @@ int IMGUI_debugger(Z80Cpu &cpu)
 	uint8_t start = 0;
 
 	Gpu gpu(cpu);
-
+	std::chrono::time_point<std::chrono::high_resolution_clock> cur, previous;
+	previous = std::chrono::high_resolution_clock::now();
 	while (done == false)
 	{
+		cur = std::chrono::high_resolution_clock::now();
+		auto elapsed = std::chrono::duration_cast<std::chrono::duration<float, std::milli>> (cur - previous);
+		previous = cur;
 		debug = false;
-		if (cpu.regs_.pc == 0xdef8 &&  cpu.regs_.af == 0x1280 && cpu.getMemory().read8bit(cpu.regs_.pc) == 0xc2)
-		    start = 1;
+		if (cpu.regs_.pc == 0x40)
+			start = 1;
 		while (debug == true && start == 1)
 		{
 			ImGui_ImplSdl_NewFrame(window);
@@ -65,7 +74,7 @@ int IMGUI_debugger(Z80Cpu &cpu)
 				ImGui::End();
 			}
 
-						{
+			{
 				ImGui::SetNextWindowSize(ImVec2(300, 90), ImGuiSetCond_FirstUseEver);
 				ImGui::SetNextWindowPos(ImVec2(20, 350));
 				ImGui::Begin("Interrupt State");
@@ -99,7 +108,6 @@ int IMGUI_debugger(Z80Cpu &cpu)
 					break;
 				}
 
-
 				case SDL_KEYDOWN:
 					std::cout << "out dbg" << std::endl;
 					debug = false;
@@ -108,18 +116,33 @@ int IMGUI_debugger(Z80Cpu &cpu)
 			}
 		}
 
+		cpu.tickCount_ = 0;
 		cpu.getMemory().joypad_.handleEvent(event, cpu);
-		cpu.updateTimer();
-		exec = cpu.getMemory().read8bit(cpu.regs_.pc++);
-		cpu.opcodes_[exec].opFunc();
-		if (cpu.fjmp_ == false)
-			cpu.regs_.pc += cpu.opcodes_[exec].size;
-		cpu.fjmp_ = false;
-		cpu.processRequestInterrupt();
-		gpu.updateGpu();
-		//std::cout << "pc: " << std::hex << (int32_t) (cpu.regs_.pc) << ": " << std::hex << (uint16_t)exec << " -> " << cpu.opcodes_[exec].value << std::endl;
+		gpu.gpuCycle_ = 0;
+		while (cpu.tickCount_ < 70224)
+		{
+			cpu.updateTimer();
+			uint32_t prevTickCount = cpu.tickCount_;
+			
+			exec = cpu.getMemory().read8bit(cpu.regs_.pc++);
+			cpu.opcodes_[exec].opFunc();
+			if (cpu.fjmp_ == false)
+				cpu.regs_.pc += cpu.opcodes_[exec].size;
+			cpu.fjmp_ = false;
+			gpu.updateGpu(cpu.tickCount_ - prevTickCount);
+			cpu.processRequestInterrupt();
+		}
+		gpu.render();
+
+		if (elapsed.count() < DELAY_TIME)
+		{
+			std::this_thread::sleep_for(std::chrono::duration<float, std::milli>(DELAY_TIME - elapsed.count()));
+		}
+		else
+		{
+			printf("overpassed by %f\n", elapsed.count() - DELAY_TIME);
+		}
 	}
-	// Cleanup
 	ImGui_ImplSdl_Shutdown();
 	SDL_GL_DeleteContext(glcontext);
 	SDL_DestroyWindow(window);
