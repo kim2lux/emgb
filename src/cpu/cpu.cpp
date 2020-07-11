@@ -128,6 +128,7 @@ void Z80Cpu::processRequestInterrupt()
                         switch (interrupt)
                         {
                         case InterruptType::VBLANCK:
+                            std::cout << "vblank interrupt" << std::endl;
                             regs_.pc = VBLANK_ADDR;
                             break;
                         case InterruptType::LCDC:

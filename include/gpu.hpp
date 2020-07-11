@@ -23,6 +23,18 @@ const int VBLANK_CYCLES = 4560;
 static constexpr uint8_t VERTICAL_BLANK_SCAN_LINE = 144;
 static constexpr uint8_t VERTICAL_BLANK_SCAN_LINE_MAX = 153;
 
+static constexpr uint8_t gameboy_width = 160;
+static constexpr uint8_t gameboy_height = 144;
+
+static constexpr uint16_t bg_tile_map_display_select_low = 0x9800;
+static constexpr uint16_t bg_tile_map_display_select_high = 0x9c00;
+
+static constexpr uint16_t window_tile_display_map_select_low = 0x9800;
+static constexpr uint16_t window_tile_display_map_select_high = 0x9c00;
+
+static constexpr uint16_t tile_data_addr_low = 0x8000;
+static constexpr uint16_t tile_data_addr_high = 0x8800;
+
 enum GpuMode
 {
 	H_BLANK = 0,
@@ -45,7 +57,7 @@ enum LcdCTrl : uint8_t
 
 class Gpu
 {
-private:
+public:
 	uint16_t backgroudMap_;
 	uint16_t windowMap_;
 	uint16_t tileData_;
@@ -53,6 +65,7 @@ private:
 	uint8_t scY_;
 	uint8_t scX_;
 	bool unsign_;
+	SDL_Surface * window_surface_;
 
 public:
 	void simpleRender();

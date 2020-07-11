@@ -24,7 +24,7 @@ int IMGUI_debugger(Z80Cpu &cpu)
 	int res = SDL_GetCurrentDisplayMode(0, &current);
 	if (res != 0)
 		SDL_Log("Could not get display mode for video display #%d: %s", 0, SDL_GetError());
-	SDL_Window *window = SDL_CreateWindow("ImGui SDL2+OpenGL example", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 500, 500, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
+	SDL_Window *window = SDL_CreateWindow("Debug", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 600, 600, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
 	SDL_GLContext glcontext = SDL_GL_CreateContext(window);
 
 	// Setup ImGui binding
@@ -46,10 +46,10 @@ int IMGUI_debugger(Z80Cpu &cpu)
 		cur = std::chrono::high_resolution_clock::now();
 		auto elapsed = std::chrono::duration_cast<std::chrono::duration<float, std::milli>> (cur - previous);
 		previous = cur;
-		debug = false;
-		if (cpu.regs_.pc == 0x40)
+		debug = true;
+		if (cpu.regs_.pc == 0x245)
 			start = 1;
-		while (debug == true && start == 1)
+		while (debug == true)
 		{
 			ImGui_ImplSdl_NewFrame(window);
 			{
@@ -64,8 +64,30 @@ int IMGUI_debugger(Z80Cpu &cpu)
 				ImGui::End();
 			}
 			{
-				ImGui::SetNextWindowSize(ImVec2(300, 90), ImGuiSetCond_FirstUseEver);
-				ImGui::SetNextWindowPos(ImVec2(20, 200));
+				gpu.updateGpuRegister();
+				ImGui::Begin("LCD Ctrl");
+				ImGui::Text("LCD Enable: %x", isBitSet(gpu.lcdCtrl_, LcdCTrl::LCD_DISPLAY) ? 1 : 0);
+				ImGui::Text("Window Tile Map: %x", isBitSet(gpu.lcdCtrl_, LcdCTrl::WIN_TILE_MAP_DISPLAY) ? window_tile_display_map_select_high : window_tile_display_map_select_low);
+				ImGui::Text("Window Enable: %x", isBitSet(gpu.lcdCtrl_, LcdCTrl::WIN_DISPLAY) ? 1 : 0);
+				ImGui::Text("Tile Addr: %x", isBitSet(gpu.lcdCtrl_, LcdCTrl::BG_WIN_TILE_DATA_SELECT) ? tile_data_addr_low : tile_data_addr_high);
+				ImGui::Text("Bg Tile Map: %x", isBitSet(gpu.lcdCtrl_, LcdCTrl::BG_TILE_MAP_DISPLAY) ? bg_tile_map_display_select_high : bg_tile_map_display_select_low);
+				ImGui::Text("Sprite Size: %x", isBitSet(gpu.lcdCtrl_, LcdCTrl::OBJ_SIZE) ? 16 : 8);
+				ImGui::Text("Sprite Enable: %x", isBitSet(gpu.lcdCtrl_, LcdCTrl::OBJ_DISPLAY) ? 1 : 0);
+				ImGui::Text("BG/WIN Display: %x", isBitSet(gpu.lcdCtrl_, LcdCTrl::BG_WIN_PRIORITY) ? 1 : 0);
+				ImGui::End();
+			}
+
+			{
+				ImGui::Begin("Flag Register");
+				ImGui::Text("Z: %s", cpu.isFlagSet(Flag::ZERO_FLAG) ? "1" : "0");
+				ImGui::Text("N: %s", cpu.isFlagSet(Flag::NEG_FLAG) ? "1" : "0");
+				ImGui::Text("H: %s", cpu.isFlagSet(Flag::HALFC_FLAG) ? "1" : "0");
+				ImGui::Text("C: %s", cpu.isFlagSet(Flag::CARRY_FLAG) ? "1" : "0");
+				ImGui::End();
+			}
+
+
+			{
 				ImGui::Begin("Flag State");
 				ImGui::Text("Z: %s", cpu.isFlagSet(Flag::ZERO_FLAG) ? "1" : "0");
 				ImGui::Text("N: %s", cpu.isFlagSet(Flag::NEG_FLAG) ? "1" : "0");
@@ -75,8 +97,6 @@ int IMGUI_debugger(Z80Cpu &cpu)
 			}
 
 			{
-				ImGui::SetNextWindowSize(ImVec2(300, 90), ImGuiSetCond_FirstUseEver);
-				ImGui::SetNextWindowPos(ImVec2(20, 350));
 				ImGui::Begin("Interrupt State");
 				ImGui::Text("IE: %x", cpu.getInterrupt().interruptEnable_);
 				ImGui::Text("IF: %x", cpu.getInterrupt().interruptRequest_);
@@ -84,8 +104,6 @@ int IMGUI_debugger(Z80Cpu &cpu)
 				ImGui::End();
 			}
 			{
-				ImGui::SetNextWindowSize(ImVec2(250, 100), ImGuiSetCond_FirstUseEver);
-				ImGui::SetNextWindowPos(ImVec2(200, 20));
 				ImGui::Begin("Opcode");
 				ImGui::Text("Next opcode %x", cpu.getMemory().read8bit(cpu.regs_.pc));
 				ImGui::End();
@@ -125,6 +143,7 @@ int IMGUI_debugger(Z80Cpu &cpu)
 			uint32_t prevTickCount = cpu.tickCount_;
 			
 			exec = cpu.getMemory().read8bit(cpu.regs_.pc++);
+			//std::cout << "pc: " << std::hex << (int32_t) (cpu.regs_.pc - 1) << ": " << std::hex << (uint16_t)exec << " -> " << cpu.opcodes_[exec].value << std::endl;
 			cpu.opcodes_[exec].opFunc();
 			if (cpu.fjmp_ == false)
 				cpu.regs_.pc += cpu.opcodes_[exec].size;
@@ -134,14 +153,14 @@ int IMGUI_debugger(Z80Cpu &cpu)
 		}
 		gpu.render();
 
-		if (elapsed.count() < DELAY_TIME)
-		{
-			std::this_thread::sleep_for(std::chrono::duration<float, std::milli>(DELAY_TIME - elapsed.count()));
-		}
-		else
-		{
-			printf("overpassed by %f\n", elapsed.count() - DELAY_TIME);
-		}
+		// if (elapsed.count() < DELAY_TIME)
+		// {
+		// 	std::this_thread::sleep_for(std::chrono::duration<float, std::milli>(DELAY_TIME - elapsed.count()));
+		// }
+		// else
+		// {
+		// 	printf("overpassed by %f\n", elapsed.count() - DELAY_TIME);
+		// }
 	}
 	ImGui_ImplSdl_Shutdown();
 	SDL_GL_DeleteContext(glcontext);

@@ -1,17 +1,7 @@
 #include "gpu.hpp"
 #include <stdint.h>
 #include "utils.h"
-static constexpr uint8_t gameboy_width = 160;
-static constexpr uint8_t gameboy_height = 144;
 
-static constexpr uint16_t bg_tile_map_display_select_low = 0x9800;
-static constexpr uint16_t bg_tile_map_display_select_high = 0x9c00;
-
-static constexpr uint16_t window_tile_display_map_select_low = 0x9800;
-static constexpr uint16_t window_tile_display_map_select_high = 0x9c00;
-
-static constexpr uint16_t tile_data_addr_low = 0x8000;
-static constexpr uint16_t tile_data_addr_high = 0x8800;
 
 void Gpu::renderTile(int32_t idx, uint32_t startY, uint32_t startX)
 {
@@ -103,14 +93,14 @@ void Gpu::simpleRender()
 					dec--;
 
 					if (color == 0)
-						color = 0x00ffffff;
+						pixels_[((y + yPos) * gameboy_width) + (x + xPos)] = SDL_MapRGBA(window_surface_->format, 0xff, 0xff, 0xff, 0);
 					else if (color == 1)
-						color = 0x00444444;
+						pixels_[((y + yPos) * gameboy_width) + (x + xPos)] = SDL_MapRGBA(window_surface_->format, 0x44, 0x44, 0x44, 0);
 					else if (color == 2)
-						color = 0x00aaaaaa;
+						pixels_[((y + yPos) * gameboy_width) + (x + xPos)] = SDL_MapRGBA(window_surface_->format, 0xaa, 0xaa, 0xaa, 0);
 					else if (color == 3)
-						color = 0x00000000;
-					pixels_[((y + yPos) * gameboy_width) + (x + xPos)] = color;
+						pixels_[((y + yPos) * gameboy_width) + (x + xPos)] = SDL_MapRGBA(window_surface_->format, 0, 0, 0, 0);
+					
 					color = 0x00;
 				}
 				tileDataIndex += 2;
@@ -152,28 +142,18 @@ void Gpu::rendering()
 
 void Gpu::initDisplay()
 {
-	SDL_Init(SDL_INIT_VIDEO);
-
-	window_ = SDL_CreateWindow("2lux", 300, 300, gameboy_width, gameboy_height, 0);
+	window_ = SDL_CreateWindow("2lux", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, gameboy_width, gameboy_height, 0);
 	if (window_ == NULL)
-		LOG("SDL_CreateWindow Fail", LogStatus::CRITICAL);
-	renderer_ = SDL_CreateRenderer(window_, -1, 0);
-	if (renderer_ == NULL)
-		LOG("cannot create SDL renderer", LogStatus::CRITICAL);
-	texture_ = SDL_CreateTexture(renderer_, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, gameboy_width, gameboy_height);
-	if (texture_ == NULL)
-		LOG("cannot create SDL texture", LogStatus::CRITICAL);
-	pixels_ = (uint32_t *)malloc(sizeof(Uint32) * gameboy_width * gameboy_height);
-	if (pixels_ == NULL)
-		LOG("cannot alloc pixels", LogStatus::CRITICAL);
+	    LOG("SDL_CreateWindow Fail", LogStatus::CRITICAL);
+	window_surface_ = SDL_GetWindowSurface(window_);
+	pixels_ = (uint32_t*)window_surface_->pixels;
+	std::cout << "bpp: " << (int32_t)window_surface_->format->BytesPerPixel << std::endl;
+	std::cout << SDL_GetPixelFormatName(window_surface_->format->format) << std::endl;
 }
 
 void Gpu::render()
 {
-	SDL_UpdateTexture(texture_, NULL, pixels_, gameboy_width * sizeof(int32_t));
-	SDL_RenderClear(renderer_);
-	SDL_RenderCopy(renderer_, texture_, NULL, NULL);
-	SDL_RenderPresent(renderer_);
+	SDL_UpdateWindowSurface(window_);
 }
 
 #ifdef DEAD_CODE
