@@ -65,6 +65,9 @@ int Memory::write8bit(uint16_t addr, uint8_t value)
         cart_.rom_[addr] = value;
     }
     else if (addr >= 0xC000 && addr <= 0xDFFF) {
+        if (0xc000 == addr) {
+            std::cout << "0xc000: " << std::hex << int32_t(value) << std::endl;
+        }
         mmu_.raw[addr] = value;
 		if (addr <= 0xDDFF) {
 			mmu_.raw[addr + 0x2000] = value;
@@ -77,8 +80,6 @@ int Memory::write8bit(uint16_t addr, uint8_t value)
     else if (addr == 0xff04) {
         mmu_.raw[addr] = value;
     }
-
-
     else if (addr == 0xFF07) {
         //switch Clock Speed
     }
@@ -130,23 +131,21 @@ int Memory::write8bit(uint16_t addr, uint8_t value)
     else if (addr == serial_data_addr)
     {
         mmu_.raw[addr] = value;
-        std::cout << (char)value << std::endl;
+        std::cout << "serial: " << (char)value << std::endl;
     }
     else
     {
         mmu_.raw[addr] = value;
     }
-    if (addr == 0xff80 && value !=0) {
-       std::cout << value << std::endl;;
-    }
-    return (0);
 }
 
 void Memory::dmaTransfer(uint8_t value) {
-    uint16_t srcAddr = value * 100;
-    for (uint16_t idx = 0; idx < 0x9f; ++idx) {
-        write8bit(OAM_MEM_START + idx, read8bit(srcAddr + idx));
+    std::cout << "OAM transfer" << std::endl;
+    uint16_t srcaddr = value << 8; 
+    for (uint16_t idx = 0; idx < 0xa0; ++idx) {
+        write8bit(OAM_MEM_START + idx, read8bit(srcaddr + idx));
     }
+    std::cout << "into dma 0xFE00: " << std::hex << (int32_t)read8bit(OAM_MEM_START) << std::endl;
 }
 
 uint8_t Memory::memoperation(uint16_t addr, int8_t value)

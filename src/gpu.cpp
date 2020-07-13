@@ -1,7 +1,7 @@
 #include "gpu.hpp"
 #include <stdint.h>
 #include "utils.h"
-
+#include <stdint.h>
 static constexpr uint16_t bg_map_width = 0x20;
 
 void Gpu::renderTile(int32_t idx, uint32_t startY, uint32_t startX, uint16_t mapStartAddr, uint16_t tileDataAddr)
@@ -97,8 +97,52 @@ void Gpu::renderWindow()
 	}
 }
 
-void Gpu::renderSprite() {
+//OAM_TILE_START_ADDR
 
+void Gpu::renderSprite()
+{
+	for (uint8_t idx = 0; idx < 40; ++idx)
+	{
+		if (cpu_.getMemory().read8bit(OAM_START_ADDR) != 0x80)
+		{
+			std::cout << "debug" << std::endl;
+		}
+		uint8_t posY = cpu_.getMemory().read8bit(OAM_START_ADDR + (idx * 4)) - 16;
+
+		if (posY <= scanline_ && posY + 8 >= scanline_)
+		{
+			uint8_t posX = cpu_.getMemory().read8bit(OAM_START_ADDR + (idx * 4) + 1) - 8;
+			uint8_t spriteTileIndex = cpu_.getMemory().read8bit(OAM_START_ADDR + (idx * 4) + 2);
+			uint16_t spriteTileAddr = OAM_TILE_START_ADDR + (spriteTileIndex * 16);
+
+			uint8_t positionInSprite = (scanline_ % 8) * 2;
+			posY += (scanline_ % 8);
+			uint8_t upperByte = cpu_.getMemory().read8bit(spriteTileAddr + positionInSprite);
+			uint8_t lowerByte = cpu_.getMemory().read8bit(spriteTileAddr + positionInSprite + 1);
+
+			int color = 0;
+			uint8_t dec = 7;
+
+			for (int x = 0; x < 8; ++x)
+			{
+				color |= ((upperByte >> dec) & 0x01);
+				color <<= 1;
+				color |= ((lowerByte >> dec) & 0x01);
+				dec--;
+
+				if (color == 0)
+					pixels_[(posY * gameboy_width) + (x + posX)] = SDL_MapRGBA(window_surface_->format, 0xff, 0xff, 0xff, 0);
+				else if (color == 1)
+					pixels_[(posY * gameboy_width) + (x + posX)] = SDL_MapRGBA(window_surface_->format, 0x44, 0x44, 0x44, 0);
+				else if (color == 2)
+					pixels_[(posY * gameboy_width) + (x + posX)] = SDL_MapRGBA(window_surface_->format, 0xaa, 0xaa, 0xaa, 0);
+				else if (color == 3)
+					pixels_[(posY * gameboy_width) + (x + posX)] = SDL_MapRGBA(window_surface_->format, 0, 0, 0, 0);
+
+				color = 0x00;
+			}
+		}
+	}
 }
 
 void Gpu::rendering()

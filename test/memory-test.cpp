@@ -39,6 +39,6 @@ TEST_F(myTestFixture1, memory)
     ASSERT_EQ(cpu.getMemory().mmu_.IE_register, 0xAA);
 
     size_t memSize =  sizeof(cpu.getMemory().mmu_);
-    ASSERT_EQ(memSize, 0xffff);
+    ASSERT_EQ(memSize, 65536);
 
 }

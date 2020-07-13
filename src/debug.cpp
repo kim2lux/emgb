@@ -49,10 +49,11 @@ int IMGUI_debugger(Z80Cpu &cpu)
 		cur = std::chrono::high_resolution_clock::now();
 		auto elapsed = std::chrono::duration_cast<std::chrono::duration<float, std::milli>> (cur - previous);
 		previous = cur;
-		debug = true;
-		// if (cpu.regs_.pc == 0x29fa)
-		// 	start = 1;
-		while (debug == true && start == 0)
+		debug = false;
+		start = 0;
+		if (cpu.regs_.pc == 0xffb6)
+		    start = 1;
+		while (debug == true && start == 1)
 		{
 			ImGui_ImplSdl_NewFrame(window);
 			{
@@ -144,7 +145,7 @@ int IMGUI_debugger(Z80Cpu &cpu)
 
 		cpu.tickCount_ = 0;
 		cpu.getMemory().joypad_.handleEvent(event, cpu);
-		//gpu->gpuCycle_ = 0;
+		gpu->gpuCycle_ = 0;
 		while (cpu.tickCount_ < 70224)
 		{
 			cpu.updateTimer();
@@ -160,14 +161,14 @@ int IMGUI_debugger(Z80Cpu &cpu)
 		}
 	    gpu->render();
 
-		// if (elapsed.count() < DELAY_TIME)
-		// {
-		// 	std::this_thread::sleep_for(std::chrono::duration<float, std::milli>(DELAY_TIME - elapsed.count()));
-		// }
-		// else
-		// {
-		// 	printf("overpassed by %f\n", elapsed.count() - DELAY_TIME);
-		// }
+		if (elapsed.count() < DELAY_TIME)
+		{
+			std::this_thread::sleep_for(std::chrono::duration<float, std::milli>(DELAY_TIME - elapsed.count()));
+		}
+		else
+		{
+			printf("overpassed by %f\n", elapsed.count() - DELAY_TIME);
+		}
 	}
 	ImGui_ImplSdl_Shutdown();
 	SDL_GL_DeleteContext(glcontext);

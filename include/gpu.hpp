@@ -3,12 +3,14 @@
 #include "utils.h"
 #include <SDL.h>
 
+static constexpr uint16_t OAM_START_ADDR = 0xFE00;
+static constexpr uint16_t OAM_TILE_START_ADDR = 0x8000;
+
 static constexpr uint16_t LCD_DISPLAY_CTRL = 0xff40;
 static constexpr uint16_t LCDC_STATUS_ADDR = 0xff41;
 
 static constexpr uint16_t SCY_ADDR = 0xff42;
 static constexpr uint16_t SCX_ADDR = 0xff43;
-
 static constexpr uint16_t WINY_ADDR = 0xff4a;
 static constexpr uint16_t WINX_ADDR = 0xff4b;
 
@@ -25,13 +27,10 @@ static constexpr uint8_t VERTICAL_BLANK_SCAN_LINE_MAX = 153;
 
 static constexpr uint8_t gameboy_width = 160;
 static constexpr uint8_t gameboy_height = 144;
-
 static constexpr uint16_t bg_tile_map_display_select_low = 0x9800;
 static constexpr uint16_t bg_tile_map_display_select_high = 0x9c00;
-
 static constexpr uint16_t window_tile_display_map_select_low = 0x9800;
 static constexpr uint16_t window_tile_display_map_select_high = 0x9c00;
-
 static constexpr uint16_t tile_data_addr_low = 0x8000;
 static constexpr uint16_t tile_data_addr_high = 0x8800;
 
@@ -168,7 +167,7 @@ public:
 
 	void hblank()
 	{
-		//std::cout << "h blank: " << scanline_ << std::endl;
+		//// std::cout << "h blank: " << scanline_ << std::endl;
 		if (gpuCycle_ >= MIN_HBLANK_MODE_CYCLES)
 		{
 			gpuCycle_ -= MIN_HBLANK_MODE_CYCLES;
@@ -218,7 +217,7 @@ public:
 
 		scanline_ = cpu_.getMemory().read8bit(LY_ADDR);
 		// keep inc scanline and call LCD interrupt
-		//std::cout << "V blank: " << scanline_ << std::endl;
+		//// std::cout << "V blank: " << scanline_ << std::endl;
 		if (vblanckCycle_ >= MAX_VIDEO_CYCLES)
 		{
 
@@ -227,7 +226,7 @@ public:
 			{
 				cpu_.getMemory().write8bit(LY_ADDR, ++scanline_);
 			}
-			std::cout << "current scanline: " << scanline_ << std::endl;
+			//// std::cout << "current scanline: " << scanline_ << std::endl;
 			compareScanline();
 		}
 
@@ -254,7 +253,7 @@ public:
 
 	void oam()
 	{
-		//std::cout << "OAM: " << scanline_ << std::endl;
+		//// std::cout << "OAM: " << scanline_ << std::endl;
 		if (gpuCycle_ >= OAM_MODE_CYCLES)
 		{
 			gpuCycle_ -= OAM_MODE_CYCLES;
@@ -269,7 +268,7 @@ public:
 
 	void lcdTransfert()
 	{
-		//std::cout << "LCD: " << scanline_ << std::endl;
+		//// std::cout << "LCD: " << scanline_ << std::endl;
 		if (gpuCycle_ >= MIN_LCD_TRANSFER_CYCLES)
 		{
 			gpuCycle_ -= MIN_LCD_TRANSFER_CYCLES;
@@ -277,9 +276,9 @@ public:
 
 			//display rendering ? should be done right after oam transfer ?
 			if (cpu_.getMemory().read8bit(LY_ADDR) > 144) {
-				std::cout << "LCD TOO HIGH scanline: " << scanline_ << std::endl;
+				// std::cout << "LCD TOO HIGH scanline: " << scanline_ << std::endl;
 			} else {
-				std::cout << "current scanline draw: " << scanline_ << std::endl;
+				// std::cout << "current scanline draw: " << scanline_ << std::endl;
 			    rendering();
 			}
 

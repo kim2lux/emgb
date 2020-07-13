@@ -16,6 +16,7 @@ TEST_F(myTestFixture1, interrupt)
 
     // ENABLE INTERRUPT
     cpu.getInterrupt().interruptEnable_ = cpu.getMemory().read8bit(IE_REGISTER);
+    std::cout << std::hex << (int32_t)cpu.getInterrupt().interruptEnable_ << std::endl;
     setBit(cpu.getInterrupt().interruptEnable_, InterruptType::VBLANCK);
     ASSERT_EQ(cpu.getInterrupt().interruptEnable_, 0x01);
     cpu.getMemory().write8bit(IE_REGISTER, cpu.getInterrupt().interruptEnable_);
