@@ -44,7 +44,7 @@ uint16_t Memory::read16bit(uint16_t addr)
 
 uint8_t Memory::read8bit(uint16_t addr)
 {
-    if (addr < 0x8000) // cartridge region
+    if (addr < 0x8000)
     {
         return (cart_.rom_[addr]);
     }
@@ -53,19 +53,13 @@ uint8_t Memory::read8bit(uint16_t addr)
         return (joypad_.padState());
     }
     else if (addr == 0xff44) {
-        //std::cout << gpu_.get()->getScanline() << std::endl;
         return gpu_.get()->getScanline();
     }
-    if (addr == 0xff80)
-        return 0;
     return (mmu_.raw[addr]);
 }
 
 int Memory::write8bit(uint16_t addr, uint8_t value)
 {
-    if (addr == 0xffa6) {
-        std::cout << "debug" << std::endl;
-    }
     if (addr >= 0xA000 && addr < 0xC000)
     {
         cart_.rom_[addr] = value;
@@ -141,14 +135,8 @@ int Memory::write8bit(uint16_t addr, uint8_t value)
     {
         mmu_.raw[addr] = value;
     }
-    if (addr >= 0xff80) {
-        mmu_.raw[0xff80] = 0;
-        std::cout << "0xff80-0xffff values: " << std::endl;
-        for (uint32_t idx = 0xff80; idx <= 0xffff; idx++)
-        {
-            std::cout << std::hex << (uint32_t)mmu_.raw[idx];
-        }
-        std::cout << std::endl;
+    if (addr == 0xff80 && value !=0) {
+       std::cout << value << std::endl;;
     }
     return (0);
 }

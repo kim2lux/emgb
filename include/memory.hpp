@@ -23,7 +23,7 @@ union u_mmu
 		uint8_t oam_[0x00A0]; // FE00 - FE9F oam information tables
 		uint8_t unused_[0x0060]; // FEA0 - FEFF unused on GMB 
 		uint8_t io_registers_[0x0080]; // FF00 - FF7F
-		uint8_t hram_[0x007F]; // FF80 - FFFE
+		uint8_t hram_[0x007E]; // FF80 - FFFE
 		uint8_t IE_register; // FFFF
 	};
 	uint8_t raw[0xffff];

@@ -65,9 +65,7 @@ void Gpu::updateGpuRegister()
 void Gpu::simpleRender()
 {
 	updateGpuRegister();
-	uint16_t tileDataAddr_ = 0x8000; // to change
 	uint16_t tileDataIndex = 0;
-	unsign_ = true;// to change
 	uint32_t bgmap = bg_tile_map_display_select_low;
 	uint32_t color = 0x00ffffff;
 
@@ -78,7 +76,7 @@ void Gpu::simpleRender()
 		{
 			uint8_t u_tileIndex = cpu_.getMemory().read8bit(bgmap);
 			bgmap += 1;
-			tileDataIndex = tileDataAddr_ + (u_tileIndex * 16);
+			tileDataIndex = tileData_ + (u_tileIndex * 16);
 			for (int y = 0; y < 8; ++y)
 			{
 				uint8_t upperByte = cpu_.getMemory().read8bit(tileDataIndex);

@@ -180,7 +180,6 @@ public:
 				cpu_.getMemory().write8bit(LCDC_STATUS_ADDR, lcdStatus);
 
 				//request vblank interrupt
-				std::cout << "REQUEST VBLANK" << std::endl;
 				cpu_.requestInterrupt(InterruptType::VBLANCK);
 				// request interrupt on hblank flag ?
 				if (isBitSet(lcdStatus, 4))

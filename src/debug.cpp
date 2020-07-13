@@ -50,8 +50,7 @@ int IMGUI_debugger(Z80Cpu &cpu)
 		auto elapsed = std::chrono::duration_cast<std::chrono::duration<float, std::milli>> (cur - previous);
 		previous = cur;
 		debug = false;
-		start = 0;
-		if (cpu.regs_.pc == 0x34e)
+		if (cpu.regs_.pc == 0x29fa)
 			start = 1;
 		while (debug == true && start == 1)
 		{
@@ -127,7 +126,6 @@ int IMGUI_debugger(Z80Cpu &cpu)
 				}
 
 				case SDL_KEYDOWN:
-					std::cout << "out dbg" << std::endl;
 					debug = false;
 					break;
 				}
@@ -138,13 +136,9 @@ int IMGUI_debugger(Z80Cpu &cpu)
 		cpu.getMemory().joypad_.handleEvent(event, cpu);
 		gpu->gpuCycle_ = 0;
 		while (cpu.tickCount_ < 70224)
-	    {
+		{
 			cpu.updateTimer();
 			uint32_t prevTickCount = cpu.tickCount_;
-			if (cpu.regs_.pc == 0x0040) {
-				std::cout << "vblank" << std::endl;
-			}
-			
 			exec = cpu.getMemory().read8bit(cpu.regs_.pc++);
 			//std::cout << "pc: " << std::hex << (int32_t) (cpu.regs_.pc - 1) << ": " << std::hex << (uint16_t)exec << " -> " << cpu.opcodes_[exec].value << std::endl;
 			cpu.opcodes_[exec].opFunc();
@@ -154,7 +148,7 @@ int IMGUI_debugger(Z80Cpu &cpu)
 			gpu->updateGpu(cpu.tickCount_ - prevTickCount);
 			cpu.processRequestInterrupt();
 		}
-		gpu->render();
+	    gpu->render();
 
 		// if (elapsed.count() < DELAY_TIME)
 		// {

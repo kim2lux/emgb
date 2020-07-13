@@ -37,7 +37,8 @@ void Z80Cpu::ld_hl_sp_r_0xf8() {
 
 void Z80Cpu::ldd_addr_a_80xe0() {
     tickCount_ += 12;
-    mmu_.write8bit((uint16_t)0xff00 + (uint16_t)mmu_.read8bit(regs_.pc), regs_.a);
+    uint8_t value = mmu_.read8bit(regs_.pc);
+    mmu_.write8bit((uint16_t)0xff00 + value, regs_.a);
 }
 
 void Z80Cpu::ldh_a_val_80xf0() {
