@@ -64,6 +64,8 @@ public:
 	uint8_t lcdCtrl_;
 	uint8_t scY_;
 	uint8_t scX_;
+	uint8_t winY_;
+	uint8_t winX_;
 	bool unsign_;
 	SDL_Surface * window_surface_;
 
@@ -74,7 +76,9 @@ public:
 	void initDisplay();
 	void renderBackground();
 	void renderWindow();
-	void renderTile(int32_t idx, uint32_t posY, uint32_t posX);
+	void renderSprite();
+	void renderTile(int32_t idx, uint32_t startY, uint32_t startX,
+					uint16_t mapStartAddr, uint16_t tileDataAddr);
 	void updateGpuRegister();
 
 	Gpu(Z80Cpu &cpu) : cpu_(cpu)
@@ -83,6 +87,10 @@ public:
 		lcdEnable_ = true;
 		gpuCycle_ = 0;
 		scanline_ = 0;
+		scX_ = 0;
+		scY_ = 0;
+		winY_ = 0;
+		winX_ = 0;
 		initDisplay();
 	}
 
@@ -102,6 +110,7 @@ public:
 		lcdEnable_ = false;
 		gpuCycle_ = 0;
 		vblanckCycle_ = 0;
+		scanline_ = 0;
 		cpu_.getMemory().write8bit(LY_ADDR, 0);
 
 		uint8_t lcdc = cpu_.getMemory().read8bit(LCDC_STATUS_ADDR);
@@ -159,7 +168,7 @@ public:
 
 	void hblank()
 	{
-		// std::cout << "h blank" << std::endl;
+		//std::cout << "h blank: " << scanline_ << std::endl;
 		if (gpuCycle_ >= MIN_HBLANK_MODE_CYCLES)
 		{
 			gpuCycle_ -= MIN_HBLANK_MODE_CYCLES;
@@ -168,7 +177,7 @@ public:
 			scanline_ += 1;
 			cpu_.getMemory().write8bit(LY_ADDR, scanline_);
 			compareScanline();
-			if (scanline_ == VERTICAL_BLANK_SCAN_LINE)
+			if (scanline_ > VERTICAL_BLANK_SCAN_LINE)
 			{
 				gpuMode_ = GpuMode::V_BLANK;
 
@@ -209,14 +218,16 @@ public:
 
 		scanline_ = cpu_.getMemory().read8bit(LY_ADDR);
 		// keep inc scanline and call LCD interrupt
-		// std::cout << "V blank" << std::endl;
+		//std::cout << "V blank: " << scanline_ << std::endl;
 		if (vblanckCycle_ >= MAX_VIDEO_CYCLES)
 		{
+
 			vblanckCycle_ = 0;
 			if (scanline_ < VERTICAL_BLANK_SCAN_LINE_MAX)
 			{
 				cpu_.getMemory().write8bit(LY_ADDR, ++scanline_);
 			}
+			std::cout << "current scanline: " << scanline_ << std::endl;
 			compareScanline();
 		}
 
@@ -228,6 +239,7 @@ public:
 			uint8_t lcd = cpu_.getMemory().read8bit(LCDC_STATUS_ADDR);
 
 			cpu_.getMemory().write8bit(LY_ADDR, 0);
+			scanline_ = 0;
 			compareScanline();
 			setBit(lcd, 1);	  //set OAM mode
 			clearBit(lcd, 0); //clear vblank
@@ -242,7 +254,7 @@ public:
 
 	void oam()
 	{
-		// std::cout << "OAM" << std::endl;
+		//std::cout << "OAM: " << scanline_ << std::endl;
 		if (gpuCycle_ >= OAM_MODE_CYCLES)
 		{
 			gpuCycle_ -= OAM_MODE_CYCLES;
@@ -257,14 +269,19 @@ public:
 
 	void lcdTransfert()
 	{
-		// std::cout << "LCD" << std::endl;
+		//std::cout << "LCD: " << scanline_ << std::endl;
 		if (gpuCycle_ >= MIN_LCD_TRANSFER_CYCLES)
 		{
 			gpuCycle_ -= MIN_LCD_TRANSFER_CYCLES;
 			gpuMode_ = GpuMode::H_BLANK;
 
 			//display rendering ? should be done right after oam transfer ?
-			rendering();
+			if (cpu_.getMemory().read8bit(LY_ADDR) > 144) {
+				std::cout << "LCD TOO HIGH scanline: " << scanline_ << std::endl;
+			} else {
+				std::cout << "current scanline draw: " << scanline_ << std::endl;
+			    rendering();
+			}
 
 			uint8_t lcdStatus = cpu_.getMemory().read8bit(LCDC_STATUS_ADDR);
 			clearBit(lcdStatus, 0);
@@ -291,6 +308,8 @@ public:
 		return scanline_;
 	}
 
+	bool bgDisplayEnable_ = false;
+	bool windowsDisplayEnable_ = false;
 private:
 	Z80Cpu &cpu_;
 	SDL_Window *window_;

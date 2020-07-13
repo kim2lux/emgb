@@ -2,55 +2,60 @@
 #include <stdint.h>
 #include "utils.h"
 
+static constexpr uint16_t bg_map_width = 0x20;
 
-void Gpu::renderTile(int32_t idx, uint32_t startY, uint32_t startX)
+void Gpu::renderTile(int32_t idx, uint32_t startY, uint32_t startX, uint16_t mapStartAddr, uint16_t tileDataAddr)
 {
-	uint16_t posY = (startY / 8) * 32;
-	uint16_t tileDataAddr_;
+	uint16_t posY = (startY / 8) * bg_map_width;
 	if (unsign_ == true)
 	{
-		uint8_t u_tileIndex = cpu_.getMemory().read8bit(backgroudMap_ + posY + (startX / 8));
-		tileDataAddr_ += u_tileIndex * 16;
-		assert(tileDataAddr_ < 0x8FFF);
+		uint8_t u_tileIndex = cpu_.getMemory().read8bit(mapStartAddr + posY + startX);
+		tileDataAddr += u_tileIndex * 16;
+		assert(tileDataAddr < 0x8FFF);
 	}
 	else
 	{
-		int8_t tileIndex = (int8_t)cpu_.getMemory().read8bit(backgroudMap_ + posY + (startX / 8));
-		tileDataAddr_ += ((tileIndex + 0x80) * 16);
-		assert(tileDataAddr_ < 0x97FF);
+		int8_t tileIndex = (int8_t)cpu_.getMemory().read8bit(mapStartAddr + posY + startX);
+		tileDataAddr += ((tileIndex + 0x80) * 16);
+		assert(tileDataAddr < 0x97FF);
 	}
 
 	uint8_t positionInTile = (startY % 8) * 2;
-	uint8_t upperByte = cpu_.getMemory().read8bit(tileDataAddr_ + positionInTile);
-	uint8_t lowerByte = cpu_.getMemory().read8bit(tileDataAddr_ + positionInTile + 1);
+	uint8_t upperByte = cpu_.getMemory().read8bit(tileDataAddr + positionInTile);
+	uint8_t lowerByte = cpu_.getMemory().read8bit(tileDataAddr + positionInTile + 1);
 
-	int colourBit = startX % 8;
-	colourBit -= 7;
-	colourBit = -colourBit;
+	int color = 0;
+	uint8_t dec = 7;
 
-	int colourNum = isBitSet(lowerByte, colourBit) ? 1 : 0;
-	colourNum <<= 1;
-	colourNum |= isBitSet(upperByte, colourBit) ? 1 : 0;
-
-	if (colourNum != 0)
+	for (int x = 0; x < 8; ++x)
 	{
-		if (colourNum == 1)
-			colourNum = 0x00444444;
-		else if (colourNum == 2)
-			colourNum = 0x00aaaaaa;
-		else if (colourNum == 3)
-			colourNum = 0x00000000;
-		pixels_[(gameboy_width * scanline_) + idx] = colourNum;
+		color |= ((upperByte >> dec) & 0x01);
+		color <<= 1;
+		color |= ((lowerByte >> dec) & 0x01);
+		dec--;
+
+		if (color == 0)
+			pixels_[(startY * gameboy_width) + (x + (idx * 8))] = SDL_MapRGBA(window_surface_->format, 0xff, 0xff, 0xff, 0);
+		else if (color == 1)
+			pixels_[(startY * gameboy_width) + (x + (idx * 8))] = SDL_MapRGBA(window_surface_->format, 0x44, 0x44, 0x44, 0);
+		else if (color == 2)
+			pixels_[(startY * gameboy_width) + (x + (idx * 8))] = SDL_MapRGBA(window_surface_->format, 0xaa, 0xaa, 0xaa, 0);
+		else if (color == 3)
+			pixels_[(startY * gameboy_width) + (x + (idx * 8))] = SDL_MapRGBA(window_surface_->format, 0, 0, 0, 0);
+
+		color = 0x00;
 	}
-	else
-		pixels_[(gameboy_width * scanline_) + idx] = 0x00FFFFFF;
 }
 
 void Gpu::updateGpuRegister()
 {
 	unsign_ = false;
 	lcdCtrl_ = cpu_.getMemory().read8bit(LCD_DISPLAY_CTRL);
+	lcdEnable_ = isBitSet(lcdCtrl_, 7) ? true: false;
+	windowsDisplayEnable_ = isBitSet(lcdCtrl_, 5) ? true: false;
+	bgDisplayEnable_ = isBitSet(lcdCtrl_, 0) ? true: false;
 	backgroudMap_ = isBitSet(lcdCtrl_, 3) ? bg_tile_map_display_select_high : bg_tile_map_display_select_low;
+	windowMap_ = isBitSet(lcdCtrl_, 6) ? bg_tile_map_display_select_high : bg_tile_map_display_select_low;
 	tileData_ = isBitSet(lcdCtrl_, 4) ? tile_data_addr_low : tile_data_addr_high;
 	if (isBitSet(lcdCtrl_, 4))
 	{
@@ -60,7 +65,80 @@ void Gpu::updateGpuRegister()
 
 	scX_ = cpu_.getMemory().read8bit(SCX_ADDR);
 	scY_ = cpu_.getMemory().read8bit(SCY_ADDR);
+	winX_ = cpu_.getMemory().read8bit(WINX_ADDR);
+	winY_ = cpu_.getMemory().read8bit(WINY_ADDR);
 }
+
+void Gpu::renderBackground()
+{
+	//updateGpuRegister(); update LcdCtrol within rendering func
+	uint32_t startY = scanline_ - scY_;
+	uint32_t startX = 0;
+
+	for(int32_t idx = 0; idx < 20; idx +=1) {
+	    startX = idx + scX_;
+	 	renderTile(idx, startY, startX, backgroudMap_, tileData_);
+    }
+}
+
+void Gpu::renderWindow()
+{
+	if (winX_ > 7) {
+		winX_ -= 7;
+	}
+	else {
+		winX_ = 0;
+	}
+	for (int32_t idx = 0; idx < 20; idx += 1)
+	{
+		uint8_t startX = idx - winX_;
+		uint8_t startY = scanline_ - winY_;
+		renderTile(idx, startY, startX, windowMap_, tileData_);
+	}
+}
+
+void Gpu::renderSprite() {
+
+}
+
+void Gpu::rendering()
+{
+	updateGpuRegister();
+	uint8_t lcdCtrl = cpu_.getMemory().read8bit(LCD_DISPLAY_CTRL);
+	// When Bit 0 is cleared, both background and window become blank (white),
+	// and the Window Display Bit is ignored in that case. Only Sprites may still be displayed (if enabled in Bit 1).
+	if (isLcdEnable())
+	{
+		renderBackground();
+		// Window enable ?
+		if (isBitSet(lcdCtrl, LcdCTrl::WIN_DISPLAY))
+		{
+			renderWindow();
+		}
+	} if (isBitSet(lcdCtrl, LcdCTrl::OBJ_DISPLAY)){
+	    renderSprite();
+	}
+}
+
+void Gpu::initDisplay()
+{
+	window_ = SDL_CreateWindow("gameboy", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, gameboy_width, gameboy_height, 0);
+	if (window_ == NULL)
+	    LOG("SDL_CreateWindow Fail", LogStatus::CRITICAL);
+	window_surface_ = SDL_GetWindowSurface(window_);
+	pixels_ = (uint32_t*)window_surface_->pixels;
+	std::cout << "bpp: " << (int32_t)window_surface_->format->BytesPerPixel << std::endl;
+	std::cout << SDL_GetPixelFormatName(window_surface_->format->format) << std::endl;
+}
+
+void Gpu::render()
+{
+	SDL_UpdateWindowSurface(window_);
+}
+
+#ifdef DEAD_CODE
+
+
 
 void Gpu::simpleRender()
 {
@@ -107,54 +185,6 @@ void Gpu::simpleRender()
 		
 	}
 }
-
-void Gpu::renderBackground()
-{
-	updateGpuRegister();
-	uint32_t startY = scanline_ - scY_;
-	uint32_t startX = 0;
-
-
-	simpleRender();
-	// for(int32_t idx = 0; idx < 160; ++idx) {
-	// 	startX = idx + scX_;
-	// 	//renderTile(idx, startY, startX);
-	// }
-}
-
-void Gpu::rendering()
-{
-	uint8_t lcdCtrl = cpu_.getMemory().read8bit(LCD_DISPLAY_CTRL);
-	// When Bit 0 is cleared, both background and window become blank (white),
-	// and the Window Display Bit is ignored in that case. Only Sprites may still be displayed (if enabled in Bit 1).
-	if (isLcdEnable())
-	{
-		renderBackground();
-		// Window enable ?
-		if (isBitSet(lcdCtrl, 5))
-		{
-		}
-	}
-	// renderSprite();
-}
-
-void Gpu::initDisplay()
-{
-	window_ = SDL_CreateWindow("2lux", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, gameboy_width, gameboy_height, 0);
-	if (window_ == NULL)
-	    LOG("SDL_CreateWindow Fail", LogStatus::CRITICAL);
-	window_surface_ = SDL_GetWindowSurface(window_);
-	pixels_ = (uint32_t*)window_surface_->pixels;
-	std::cout << "bpp: " << (int32_t)window_surface_->format->BytesPerPixel << std::endl;
-	std::cout << SDL_GetPixelFormatName(window_surface_->format->format) << std::endl;
-}
-
-void Gpu::render()
-{
-	SDL_UpdateWindowSurface(window_);
-}
-
-#ifdef DEAD_CODE
 
 void displayAll(struct s_gb *s_gb)
 {

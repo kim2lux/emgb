@@ -109,6 +109,7 @@ int Memory::write8bit(uint16_t addr, uint8_t value)
                 case GpuMode::H_BLANK: triggerLcdInterrupt = isBitSet(currentLCDCStatus, 3); break;
                 case GpuMode::V_BLANK: triggerLcdInterrupt = isBitSet(currentLCDCStatus, 4); break;
                 case GpuMode::OAM: triggerLcdInterrupt = isBitSet(currentLCDCStatus, 5); break;
+                case GpuMode::LCD_TX: break;
             }
         }
         if (triggerLcdInterrupt) {

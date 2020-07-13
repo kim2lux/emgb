@@ -49,10 +49,10 @@ int IMGUI_debugger(Z80Cpu &cpu)
 		cur = std::chrono::high_resolution_clock::now();
 		auto elapsed = std::chrono::duration_cast<std::chrono::duration<float, std::milli>> (cur - previous);
 		previous = cur;
-		debug = false;
-		if (cpu.regs_.pc == 0x29fa)
-			start = 1;
-		while (debug == true && start == 1)
+		debug = true;
+		// if (cpu.regs_.pc == 0x29fa)
+		// 	start = 1;
+		while (debug == true && start == 0)
 		{
 			ImGui_ImplSdl_NewFrame(window);
 			{
@@ -83,9 +83,19 @@ int IMGUI_debugger(Z80Cpu &cpu)
 				ImGui::Text("Sprite Size: %x", isBitSet(gpu->lcdCtrl_, LcdCTrl::OBJ_SIZE) ? 16 : 8);
 				ImGui::Text("Sprite Enable: %x", isBitSet(gpu->lcdCtrl_, LcdCTrl::OBJ_DISPLAY) ? 1 : 0);
 				ImGui::Text("BG/WIN Display: %x", isBitSet(gpu->lcdCtrl_, LcdCTrl::BG_WIN_PRIORITY) ? 1 : 0);
+
 				ImGui::End();
 			}
-
+			{
+				ImGui::Begin("GPU Rendering");
+				ImGui::Text("Scanline: %d", gpu->getScanline());
+				ImGui::Text("GPU Mode: %d", gpu->getGpuMode());
+				ImGui::Text("Scroll X: %x", gpu->scX_);
+				ImGui::Text("Scroll Y: %x", gpu->scY_);
+				ImGui::Text("Window X: %x", gpu->winX_);
+				ImGui::Text("Window Y: %x", gpu->winY_);
+				ImGui::End();
+			}
 			{
 				ImGui::Begin("Flag Register");
 				ImGui::Text("Z: %s", cpu.isFlagSet(Flag::ZERO_FLAG) ? "1" : "0");
@@ -134,7 +144,7 @@ int IMGUI_debugger(Z80Cpu &cpu)
 
 		cpu.tickCount_ = 0;
 		cpu.getMemory().joypad_.handleEvent(event, cpu);
-		gpu->gpuCycle_ = 0;
+		//gpu->gpuCycle_ = 0;
 		while (cpu.tickCount_ < 70224)
 		{
 			cpu.updateTimer();
