@@ -107,7 +107,13 @@ void Z80Cpu::updateTimer()
 
 void Z80Cpu::requestInterrupt(InterruptType type) {
     interrupt_.interruptRequest_ = getMemory().read8bit(IF_REGISTER);
-    setBit(interrupt_.interruptRequest_, type);
+    switch (type) {
+        case InterruptType::VBLANCK: setBit(interrupt_.interruptRequest_, 0); break;
+        case InterruptType::LCDC: setBit(interrupt_.interruptRequest_, 1); break;
+        case InterruptType::TIMER: setBit(interrupt_.interruptRequest_, 2); break;
+        case InterruptType::SERIAL: setBit(interrupt_.interruptRequest_, 3); break;
+        case InterruptType::JOYPAD: setBit(interrupt_.interruptRequest_, 4); break;
+    }    
     getMemory().write8bit(IF_REGISTER, interrupt_.interruptRequest_);
 }
 
@@ -128,16 +134,19 @@ void Z80Cpu::processRequestInterrupt()
                         switch (interrupt)
                         {
                         case InterruptType::VBLANCK:
-                            std::cout << "vblank interrupt" << std::endl;
+                            // std::cout << "VBLANK interrupt" << std::endl;
                             regs_.pc = VBLANK_ADDR;
                             break;
                         case InterruptType::LCDC:
+                            // std::cout << "LCDC interrupt" << std::endl;
                             regs_.pc = LCDC_ADDR;
                             break;
                         case InterruptType::TIMER:
+                            // std::cout << "TIMER interrupt" << std::endl;
                             regs_.pc = TIME_ADDR;
                             break;
                         case InterruptType::JOYPAD:
+                            // std::cout << "JOYPAD interrupt" << std::endl;
                             regs_.pc = JOYPAD_ADDR;
                             break;
                         }

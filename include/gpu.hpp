@@ -1,7 +1,7 @@
 #pragma once
-#include <SDL.h>
 #include "cpu.hpp"
 #include "utils.h"
+#include <SDL.h>
 
 static constexpr uint16_t LCD_DISPLAY_CTRL = 0xff40;
 static constexpr uint16_t LCDC_STATUS_ADDR = 0xff41;
@@ -111,7 +111,6 @@ public:
 
 	void updateGpu(uint8_t opcodeCycle)
 	{
-		isLcdEnable();
 		if (isLcdEnable())
 		{
 			gpuCycle_ += opcodeCycle;
@@ -160,26 +159,31 @@ public:
 
 	void hblank()
 	{
+		// std::cout << "h blank" << std::endl;
 		if (gpuCycle_ >= MIN_HBLANK_MODE_CYCLES)
 		{
 			gpuCycle_ -= MIN_HBLANK_MODE_CYCLES;
 
 			scanline_ = cpu_.getMemory().read8bit(LY_ADDR);
-			cpu_.getMemory().write8bit(LY_ADDR, ++scanline_);
+			scanline_ += 1;
+			cpu_.getMemory().write8bit(LY_ADDR, scanline_);
 			compareScanline();
 			if (scanline_ == VERTICAL_BLANK_SCAN_LINE)
 			{
 				gpuMode_ = GpuMode::V_BLANK;
 
 				//set lcd status to vblank
-				uint8_t lcd = cpu_.getMemory().read8bit(LCDC_STATUS_ADDR);
-				setBit(lcd, 0);
-				cpu_.getMemory().write8bit(LCDC_STATUS_ADDR, lcd);
+				uint8_t lcdStatus = cpu_.getMemory().read8bit(LCDC_STATUS_ADDR);
+				//set current vblanck status
+				setBit(lcdStatus, 0);
+				clearBit(lcdStatus, 1); //should we reset previous status artefacts ?
+				cpu_.getMemory().write8bit(LCDC_STATUS_ADDR, lcdStatus);
 
 				//request vblank interrupt
+				std::cout << "REQUEST VBLANK" << std::endl;
 				cpu_.requestInterrupt(InterruptType::VBLANCK);
 				// request interrupt on hblank flag ?
-				if (isBitSet(lcd, 4))
+				if (isBitSet(lcdStatus, 4))
 				{
 					cpu_.requestInterrupt(InterruptType::LCDC);
 				}
@@ -187,12 +191,12 @@ public:
 			else
 			{
 				gpuMode_ = GpuMode::OAM;
-				uint8_t lcd = cpu_.getMemory().read8bit(LCDC_STATUS_ADDR);
-				setBit(lcd, 1);
-				clearBit(lcd, 0);
-				cpu_.getMemory().write8bit(LCDC_STATUS_ADDR, lcd);
+				uint8_t lcdStatus = cpu_.getMemory().read8bit(LCDC_STATUS_ADDR);
+				setBit(lcdStatus, 1);
+				clearBit(lcdStatus, 0);
+				cpu_.getMemory().write8bit(LCDC_STATUS_ADDR, lcdStatus);
 				// request interrupt on OAM flag ?
-				if (isBitSet(lcd, 5))
+				if (isBitSet(lcdStatus, 5))
 				{
 					cpu_.requestInterrupt(InterruptType::LCDC);
 				}
@@ -206,6 +210,7 @@ public:
 
 		scanline_ = cpu_.getMemory().read8bit(LY_ADDR);
 		// keep inc scanline and call LCD interrupt
+		// std::cout << "V blank" << std::endl;
 		if (vblanckCycle_ >= MAX_VIDEO_CYCLES)
 		{
 			vblanckCycle_ = 0;
@@ -238,6 +243,7 @@ public:
 
 	void oam()
 	{
+		// std::cout << "OAM" << std::endl;
 		if (gpuCycle_ >= OAM_MODE_CYCLES)
 		{
 			gpuCycle_ -= OAM_MODE_CYCLES;
@@ -252,20 +258,20 @@ public:
 
 	void lcdTransfert()
 	{
+		// std::cout << "LCD" << std::endl;
 		if (gpuCycle_ >= MIN_LCD_TRANSFER_CYCLES)
 		{
 			gpuCycle_ -= MIN_LCD_TRANSFER_CYCLES;
-
 			gpuMode_ = GpuMode::H_BLANK;
 
-			//display rendering
+			//display rendering ? should be done right after oam transfer ?
 			rendering();
 
-			uint8_t lcd = cpu_.getMemory().read8bit(LCDC_STATUS_ADDR);
-			clearBit(lcd, 0);
-			clearBit(lcd, 1);
-			cpu_.getMemory().write8bit(LCDC_STATUS_ADDR, lcd);
-			if (isBitSet(lcd, 3))
+			uint8_t lcdStatus = cpu_.getMemory().read8bit(LCDC_STATUS_ADDR);
+			clearBit(lcdStatus, 0);
+			clearBit(lcdStatus, 1);
+			cpu_.getMemory().write8bit(LCDC_STATUS_ADDR, lcdStatus);
+			if (isBitSet(lcdStatus, 3))
 			{
 				cpu_.requestInterrupt(InterruptType::LCDC);
 			}
@@ -273,6 +279,18 @@ public:
 	}
 
 	int32_t gpuCycle_ = 0;
+
+	bool &getLcdEnable() {
+		return lcdEnable_;
+	}
+
+	GpuMode & getGpuMode() {
+		return gpuMode_;
+	}
+
+	uint16_t & getScanline() {
+		return scanline_;
+	}
 
 private:
 	Z80Cpu &cpu_;

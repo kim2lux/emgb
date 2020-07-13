@@ -1,8 +1,9 @@
 #pragma once
 
+
 #include "rom.hpp"
 #include "joypad.hpp"
-
+#include <memory>
 static constexpr uint16_t serial_data_addr = 0xff01;
 static constexpr uint16_t joypad_state_addr = 0xff00;
 static constexpr uint16_t scanline_value_addr = 0xff44;
@@ -31,7 +32,7 @@ union u_mmu
 #pragma GCC diagnostic pop
 
 class Joypad;
-
+class Gpu;
 class Memory
 {
 public:
@@ -39,6 +40,9 @@ public:
 		testScanline_ = 0x89;
 		interupt_ = 0;
 	}
+
+	void setGpu(std::shared_ptr<Gpu> gpu);
+	std::shared_ptr<Gpu> gpu_;
 	void dmaTransfer(uint8_t value);
 	Cartridge &cart_;
 	Joypad &joypad_;

@@ -9,6 +9,8 @@
 #include "gpu.hpp"
 #include <chrono>
 #include <thread>
+#include <memory>
+
 const float DELAY_TIME = 1000.0f / 59.73f;
 
 const int MAX_CYCLES = 70224;
@@ -38,7 +40,8 @@ int IMGUI_debugger(Z80Cpu &cpu)
 	bool debug = true;
 	uint8_t start = 0;
 
-	Gpu gpu(cpu);
+    std::shared_ptr<Gpu> gpu = std::make_shared<Gpu>(cpu);
+	cpu.getMemory().setGpu(gpu);
 	std::chrono::time_point<std::chrono::high_resolution_clock> cur, previous;
 	previous = std::chrono::high_resolution_clock::now();
 	while (done == false)
@@ -46,14 +49,14 @@ int IMGUI_debugger(Z80Cpu &cpu)
 		cur = std::chrono::high_resolution_clock::now();
 		auto elapsed = std::chrono::duration_cast<std::chrono::duration<float, std::milli>> (cur - previous);
 		previous = cur;
-		debug = true;
-		if (cpu.regs_.pc == 0x245)
+		debug = false;
+		start = 0;
+		if (cpu.regs_.pc == 0x34e)
 			start = 1;
-		while (debug == true)
+		while (debug == true && start == 1)
 		{
 			ImGui_ImplSdl_NewFrame(window);
 			{
-				ImGui::SetNextWindowPos(ImVec2(20, 20));
 				ImGui::Begin("CPU register state");
 				ImGui::Text("Gameboy debug window");
 				ImGui::Text("a %x f %x af %x", cpu.regs_.a, cpu.regs_.f, cpu.regs_.af);
@@ -63,32 +66,29 @@ int IMGUI_debugger(Z80Cpu &cpu)
 				ImGui::Text("pc %x sp %x", cpu.regs_.pc, cpu.regs_.sp);
 				ImGui::End();
 			}
+				ImGui::Begin("Stack Pointer");
+				ImGui::Text("SP");
+				for (uint16_t value = 0xcfff; value >= 0xcfe9; value-=2) {
+				    ImGui::Text("%x -> %x", value, cpu.getMemory().read16bit(value));
+				}
+				ImGui::End();
+
 			{
-				gpu.updateGpuRegister();
+				gpu->updateGpuRegister();
 				ImGui::Begin("LCD Ctrl");
-				ImGui::Text("LCD Enable: %x", isBitSet(gpu.lcdCtrl_, LcdCTrl::LCD_DISPLAY) ? 1 : 0);
-				ImGui::Text("Window Tile Map: %x", isBitSet(gpu.lcdCtrl_, LcdCTrl::WIN_TILE_MAP_DISPLAY) ? window_tile_display_map_select_high : window_tile_display_map_select_low);
-				ImGui::Text("Window Enable: %x", isBitSet(gpu.lcdCtrl_, LcdCTrl::WIN_DISPLAY) ? 1 : 0);
-				ImGui::Text("Tile Addr: %x", isBitSet(gpu.lcdCtrl_, LcdCTrl::BG_WIN_TILE_DATA_SELECT) ? tile_data_addr_low : tile_data_addr_high);
-				ImGui::Text("Bg Tile Map: %x", isBitSet(gpu.lcdCtrl_, LcdCTrl::BG_TILE_MAP_DISPLAY) ? bg_tile_map_display_select_high : bg_tile_map_display_select_low);
-				ImGui::Text("Sprite Size: %x", isBitSet(gpu.lcdCtrl_, LcdCTrl::OBJ_SIZE) ? 16 : 8);
-				ImGui::Text("Sprite Enable: %x", isBitSet(gpu.lcdCtrl_, LcdCTrl::OBJ_DISPLAY) ? 1 : 0);
-				ImGui::Text("BG/WIN Display: %x", isBitSet(gpu.lcdCtrl_, LcdCTrl::BG_WIN_PRIORITY) ? 1 : 0);
+				ImGui::Text("LCD Enable: %x", isBitSet(gpu->lcdCtrl_, LcdCTrl::LCD_DISPLAY) ? 1 : 0);
+				ImGui::Text("Window Tile Map: %x", isBitSet(gpu->lcdCtrl_, LcdCTrl::WIN_TILE_MAP_DISPLAY) ? window_tile_display_map_select_high : window_tile_display_map_select_low);
+				ImGui::Text("Window Enable: %x", isBitSet(gpu->lcdCtrl_, LcdCTrl::WIN_DISPLAY) ? 1 : 0);
+				ImGui::Text("Tile Addr: %x", isBitSet(gpu->lcdCtrl_, LcdCTrl::BG_WIN_TILE_DATA_SELECT) ? tile_data_addr_low : tile_data_addr_high);
+				ImGui::Text("Bg Tile Map: %x", isBitSet(gpu->lcdCtrl_, LcdCTrl::BG_TILE_MAP_DISPLAY) ? bg_tile_map_display_select_high : bg_tile_map_display_select_low);
+				ImGui::Text("Sprite Size: %x", isBitSet(gpu->lcdCtrl_, LcdCTrl::OBJ_SIZE) ? 16 : 8);
+				ImGui::Text("Sprite Enable: %x", isBitSet(gpu->lcdCtrl_, LcdCTrl::OBJ_DISPLAY) ? 1 : 0);
+				ImGui::Text("BG/WIN Display: %x", isBitSet(gpu->lcdCtrl_, LcdCTrl::BG_WIN_PRIORITY) ? 1 : 0);
 				ImGui::End();
 			}
 
 			{
 				ImGui::Begin("Flag Register");
-				ImGui::Text("Z: %s", cpu.isFlagSet(Flag::ZERO_FLAG) ? "1" : "0");
-				ImGui::Text("N: %s", cpu.isFlagSet(Flag::NEG_FLAG) ? "1" : "0");
-				ImGui::Text("H: %s", cpu.isFlagSet(Flag::HALFC_FLAG) ? "1" : "0");
-				ImGui::Text("C: %s", cpu.isFlagSet(Flag::CARRY_FLAG) ? "1" : "0");
-				ImGui::End();
-			}
-
-
-			{
-				ImGui::Begin("Flag State");
 				ImGui::Text("Z: %s", cpu.isFlagSet(Flag::ZERO_FLAG) ? "1" : "0");
 				ImGui::Text("N: %s", cpu.isFlagSet(Flag::NEG_FLAG) ? "1" : "0");
 				ImGui::Text("H: %s", cpu.isFlagSet(Flag::HALFC_FLAG) ? "1" : "0");
@@ -136,11 +136,14 @@ int IMGUI_debugger(Z80Cpu &cpu)
 
 		cpu.tickCount_ = 0;
 		cpu.getMemory().joypad_.handleEvent(event, cpu);
-		gpu.gpuCycle_ = 0;
+		gpu->gpuCycle_ = 0;
 		while (cpu.tickCount_ < 70224)
-		{
+	    {
 			cpu.updateTimer();
 			uint32_t prevTickCount = cpu.tickCount_;
+			if (cpu.regs_.pc == 0x0040) {
+				std::cout << "vblank" << std::endl;
+			}
 			
 			exec = cpu.getMemory().read8bit(cpu.regs_.pc++);
 			//std::cout << "pc: " << std::hex << (int32_t) (cpu.regs_.pc - 1) << ": " << std::hex << (uint16_t)exec << " -> " << cpu.opcodes_[exec].value << std::endl;
@@ -148,10 +151,10 @@ int IMGUI_debugger(Z80Cpu &cpu)
 			if (cpu.fjmp_ == false)
 				cpu.regs_.pc += cpu.opcodes_[exec].size;
 			cpu.fjmp_ = false;
-			gpu.updateGpu(cpu.tickCount_ - prevTickCount);
+			gpu->updateGpu(cpu.tickCount_ - prevTickCount);
 			cpu.processRequestInterrupt();
 		}
-		gpu.render();
+		gpu->render();
 
 		// if (elapsed.count() < DELAY_TIME)
 		// {

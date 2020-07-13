@@ -8,7 +8,7 @@ uint8_t Joypad::padState()
 		return (0xc0 | keyButton_ | 0x10);
 	else if ((key_ & 0x10) == 0)
 		return (0xc0 | dirButton_ | 0x20);
-	return (0xff);
+	return (0xf0);
 }
 
 void Joypad::keyDown(SDL_Event &event, Z80Cpu &cpu)

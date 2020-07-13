@@ -1,8 +1,14 @@
 #include "memory.hpp"
 #include <iostream>
 #include "utils.h"
+#include "gpu.hpp"
+
 static constexpr uint16_t OAM_REG_ADDR = 0xFF46;
 static constexpr uint16_t OAM_MEM_START = 0xFE00;
+
+void Memory::setGpu(std::shared_ptr<Gpu> gpu) {
+    gpu_ = gpu;
+}
 
 void Memory::push16(uint16_t &stackPtr, uint16_t value)
 {
@@ -38,41 +44,111 @@ uint16_t Memory::read16bit(uint16_t addr)
 
 uint8_t Memory::read8bit(uint16_t addr)
 {
-    static uint8_t scanline = 0;
     if (addr < 0x8000) // cartridge region
     {
         return (cart_.rom_[addr]);
     }
-    if (addr == 0xff44) {
-        return scanline++;
-    }
-    else if (addr >= 0xFF00 && addr < 0xFF80) // IO register region
+    if (addr == joypad_state_addr)
     {
-        if (addr == joypad_state_addr)
-        {
-            return (joypad_.padState());
-        }
+        return (joypad_.padState());
     }
+    else if (addr == 0xff44) {
+        //std::cout << gpu_.get()->getScanline() << std::endl;
+        return gpu_.get()->getScanline();
+    }
+    if (addr == 0xff80)
+        return 0;
     return (mmu_.raw[addr]);
 }
 
 int Memory::write8bit(uint16_t addr, uint8_t value)
 {
-    mmu_.raw[addr] = value;
+    if (addr == 0xffa6) {
+        std::cout << "debug" << std::endl;
+    }
     if (addr >= 0xA000 && addr < 0xC000)
     {
         cart_.rom_[addr] = value;
     }
-    if (addr == joypad_state_addr)
+    else if (addr >= 0xC000 && addr <= 0xDFFF) {
+        mmu_.raw[addr] = value;
+		if (addr <= 0xDDFF) {
+			mmu_.raw[addr + 0x2000] = value;
+		}
+    }
+    else if ( addr > 0xE000 && addr <= 0xFDFF ) {
+        mmu_.raw[addr] = value;
+        mmu_.raw[addr - 0x2000] = value;
+    }
+    else if (addr == 0xff04) {
+        mmu_.raw[addr] = value;
+    }
+
+
+    else if (addr == 0xFF07) {
+        //switch Clock Speed
+    }
+    else if (addr == LCD_DISPLAY_CTRL) {
+
+        mmu_.raw[addr] = value;
+        if (!isBitSet(value, 7) && gpu_.get()->isLcdEnable()) {
+            gpu_.get()->disableLcd();
+        }
+        else if (isBitSet(value, 7) && !gpu_.get()->isLcdEnable()) {
+            gpu_.get()->getLcdEnable() = true;
+        }
+    }
+    else if (addr == LCDC_STATUS_ADDR) {
+		// Don't allow the override of values in bits [0,2]
+		uint8_t lcdcStatus =  mmu_.raw[addr];
+        //bit 3-6
+		uint8_t relevantData = value & 0x78;
+        //relevantData = updated bit 3-6  + (lcdcStatus & 0x07) = old bit 0 - 2 as previous lcdcStatus
+		uint8_t currentLCDCStatus = relevantData | (lcdcStatus & 0x07);
+		mmu_.raw[addr] = currentLCDCStatus;
+
+        bool triggerLcdInterrupt = false;
+
+        if (gpu_.get()->isLcdEnable()) {
+            GpuMode currentMode = gpu_.get()->getGpuMode();
+            switch (currentMode) {
+                case GpuMode::H_BLANK: triggerLcdInterrupt = isBitSet(currentLCDCStatus, 3); break;
+                case GpuMode::V_BLANK: triggerLcdInterrupt = isBitSet(currentLCDCStatus, 4); break;
+                case GpuMode::OAM: triggerLcdInterrupt = isBitSet(currentLCDCStatus, 5); break;
+            }
+        }
+        if (triggerLcdInterrupt) {
+            uint8_t interruptRequest_ = read8bit(IF_REGISTER);
+            setBit(interruptRequest_, 1);
+            mmu_.raw[IF_REGISTER] = interruptRequest_;
+        }
+    }
+    else if (addr == joypad_state_addr)
     {
+        mmu_.raw[addr] = value;
         joypad_.key_ = value;
     }
-    if (addr == OAM_REG_ADDR) {
+    else if (addr == OAM_REG_ADDR) {
+        mmu_.raw[addr] = value;
         dmaTransfer(value);
     }
-    if (addr == serial_data_addr)
+    else if (addr == serial_data_addr)
     {
-        //std::cout << (char)value << std::endl;
+        mmu_.raw[addr] = value;
+        std::cout << (char)value << std::endl;
+    }
+    else
+    {
+        mmu_.raw[addr] = value;
+    }
+    if (addr >= 0xff80) {
+        mmu_.raw[0xff80] = 0;
+        std::cout << "0xff80-0xffff values: " << std::endl;
+        for (uint32_t idx = 0xff80; idx <= 0xffff; idx++)
+        {
+            std::cout << std::hex << (uint32_t)mmu_.raw[idx];
+        }
+        std::cout << std::endl;
     }
     return (0);
 }
