@@ -58,7 +58,7 @@ uint8_t Memory::read8bit(uint16_t addr)
     return (mmu_.raw[addr]);
 }
 
-int Memory::write8bit(uint16_t addr, uint8_t value)
+void Memory::write8bit(uint16_t addr, uint8_t value)
 {
     if (addr >= 0xA000 && addr < 0xC000)
     {
@@ -86,11 +86,15 @@ int Memory::write8bit(uint16_t addr, uint8_t value)
     else if (addr == LCD_DISPLAY_CTRL) {
 
         mmu_.raw[addr] = value;
-        if (!isBitSet(value, 7) && gpu_.get()->isLcdEnable()) {
-            gpu_.get()->disableLcd();
-        }
-        else if (isBitSet(value, 7) && !gpu_.get()->isLcdEnable()) {
-            gpu_.get()->getLcdEnable() = true;
+        if (gpu_.get() != nullptr) {
+            if (!isBitSet(value, 7) && gpu_.get()->isLcdEnable())
+            {
+                gpu_.get()->disableLcd();
+            }
+            else if (isBitSet(value, 7) && !gpu_.get()->isLcdEnable())
+            {
+                gpu_.get()->getLcdEnable() = true;
+            }
         }
     }
     else if (addr == LCDC_STATUS_ADDR) {
@@ -103,20 +107,31 @@ int Memory::write8bit(uint16_t addr, uint8_t value)
 		mmu_.raw[addr] = currentLCDCStatus;
 
         bool triggerLcdInterrupt = false;
-
-        if (gpu_.get()->isLcdEnable()) {
-            GpuMode currentMode = gpu_.get()->getGpuMode();
-            switch (currentMode) {
-                case GpuMode::H_BLANK: triggerLcdInterrupt = isBitSet(currentLCDCStatus, 3); break;
-                case GpuMode::V_BLANK: triggerLcdInterrupt = isBitSet(currentLCDCStatus, 4); break;
-                case GpuMode::OAM: triggerLcdInterrupt = isBitSet(currentLCDCStatus, 5); break;
-                case GpuMode::LCD_TX: break;
+        if (gpu_.get() != nullptr) {
+            if (gpu_.get()->isLcdEnable())
+            {
+                GpuMode currentMode = gpu_.get()->getGpuMode();
+                switch (currentMode)
+                {
+                case GpuMode::H_BLANK:
+                    triggerLcdInterrupt = isBitSet(currentLCDCStatus, 3);
+                    break;
+                case GpuMode::V_BLANK:
+                    triggerLcdInterrupt = isBitSet(currentLCDCStatus, 4);
+                    break;
+                case GpuMode::OAM:
+                    triggerLcdInterrupt = isBitSet(currentLCDCStatus, 5);
+                    break;
+                case GpuMode::LCD_TX:
+                    break;
+                }
             }
-        }
-        if (triggerLcdInterrupt) {
-            uint8_t interruptRequest_ = read8bit(IF_REGISTER);
-            setBit(interruptRequest_, 1);
-            mmu_.raw[IF_REGISTER] = interruptRequest_;
+            if (triggerLcdInterrupt == true)
+            {
+                uint8_t interruptRequest_ = read8bit(IF_REGISTER);
+                setBit(interruptRequest_, 1);
+                mmu_.raw[IF_REGISTER] = interruptRequest_;
+            }
         }
     }
     else if (addr == joypad_state_addr)

@@ -40,6 +40,19 @@ void Z80Cpu::initRegister()
     regs_.sp = 0xfffe;
     regs_.pc = 0x100;
 
+    timer_.clockSpeed_ = 0;
+    timer_.divRegister_ = 0;
+    timer_.tac_ = 0;
+    timer_.tima_ = 0;
+    timer_.timerCycleCounter_ = 0;
+    timer_.tma_ = 0;
+
+    interrupt_.interruptRequest_ = 0;
+    interrupt_.interruptEnable_ = 0;
+    interrupt_.masterInterrupt_ = false;
+
+    fjmp_ = false;
+
     set_zero_flag();
     set_half_carry_flag();
     set_carry_flag();

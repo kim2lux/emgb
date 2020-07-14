@@ -37,6 +37,8 @@ class Memory
 {
 public:
     Memory(Cartridge &cart, Joypad &joypad) : cart_(cart), joypad_(joypad) {
+		gpu_ = nullptr;
+		memoryInit();
 		testScanline_ = 0x89;
 		interupt_ = 0;
 	}
@@ -50,7 +52,7 @@ public:
 	uint8_t testScanline_ = 0x89;
 	uint8_t interupt_ = 0;
 
-	int write8bit(uint16_t addr, uint8_t value);
+	void write8bit(uint16_t addr, uint8_t value);
 	void write16bitToAddr(uint16_t addr, uint16_t value);
 	uint8_t read8bit(uint16_t addr);
 	uint16_t read16bit(uint16_t addr);

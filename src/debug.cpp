@@ -144,12 +144,13 @@ int IMGUI_debugger(Z80Cpu &cpu)
 		}
 
 		cpu.tickCount_ = 0;
+		uint32_t prevTickCount = 0;
 		cpu.getMemory().joypad_.handleEvent(event, cpu);
 		gpu->gpuCycle_ = 0;
 		while (cpu.tickCount_ < 70224)
 		{
 			cpu.updateTimer();
-			uint32_t prevTickCount = cpu.tickCount_;
+			prevTickCount = cpu.tickCount_;
 			exec = cpu.getMemory().read8bit(cpu.regs_.pc++);
 			//std::cout << "pc: " << std::hex << (int32_t) (cpu.regs_.pc - 1) << ": " << std::hex << (uint16_t)exec << " -> " << cpu.opcodes_[exec].value << std::endl;
 			cpu.opcodes_[exec].opFunc();
