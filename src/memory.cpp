@@ -65,9 +65,6 @@ void Memory::write8bit(uint16_t addr, uint8_t value)
         cart_.rom_[addr] = value;
     }
     else if (addr >= 0xC000 && addr <= 0xDFFF) {
-        if (0xc000 == addr) {
-            std::cout << "0xc000: " << std::hex << int32_t(value) << std::endl;
-        }
         mmu_.raw[addr] = value;
 		if (addr <= 0xDDFF) {
 			mmu_.raw[addr + 0x2000] = value;
