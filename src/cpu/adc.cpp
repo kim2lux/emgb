@@ -37,6 +37,11 @@ void Z80Cpu::adc_b() {
     adc8bit(regs_.a, regs_.b);
 }
 
+void Z80Cpu::adc_a_8_ce() {
+    tickCount_ += 4;
+    adc8bit(regs_.a, mmu_.read8bit(regs_.pc));
+}
+
 void Z80Cpu::adc_c() {
     adc8bit(regs_.a, regs_.c);
 }

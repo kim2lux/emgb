@@ -7,6 +7,7 @@ void Z80Cpu::extern_0xcb()
 }
 
 void Z80Cpu::halt_proc() {
+    tickCount_ += 4;
     halt_ = true;
 }
 

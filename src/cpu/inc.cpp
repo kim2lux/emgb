@@ -65,6 +65,7 @@ void Z80Cpu::inc_h_0x24()
 
 void Z80Cpu::inc_hl_addr_0x34()
 {
+    tickCount_ += 8;
     uint8_t value = getMemory().read8bit(regs_.hl);
     inc8BitRegister(value);
     getMemory().write8bit(regs_.hl, value);

@@ -1,6 +1,7 @@
 #include "cpu.hpp"
 
 void Z80Cpu::sbc8bit(uint8_t &reg, uint8_t sub) {
+	tickCount_ += 4;
 	uint8_t carry = isFlagSet(Flag::CARRY_FLAG) ? 1 : 0;
 	int32_t result = reg - sub - carry;
 
@@ -60,4 +61,10 @@ void Z80Cpu::sbc_hl()
 {
     tickCount_ += 4;
     sbc8bit(regs_.a, mmu_.read8bit(regs_.hl));
+}
+
+
+void Z80Cpu::sbc_a_8_de() {
+    tickCount_ += 4;
+    sbc8bit(regs_.a, mmu_.read8bit(regs_.pc));
 }

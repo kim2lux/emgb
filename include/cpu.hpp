@@ -61,7 +61,7 @@ public:
     bool halt_ = false;
 
     // timer
-    void updateTimer();
+    void updateTimer(uint8_t cycle);
 
     // interrupt
     void requestInterrupt(InterruptType type);

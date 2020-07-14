@@ -138,6 +138,7 @@ void Z80Cpu::xor_hl() {
 
 void Z80Cpu::and8bit(uint8_t & reg, uint8_t value) {
 	reg = reg & value;
+    tickCount_ += 4;
 
 	clear_flags();
 	set_half_carry_flag();

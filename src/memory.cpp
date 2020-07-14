@@ -10,6 +10,10 @@ void Memory::setGpu(std::shared_ptr<Gpu> gpu) {
     gpu_ = gpu;
 }
 
+void Memory::setCpu(std::shared_ptr<Z80Cpu> cpu) {
+    cpu_ = cpu;
+}
+
 void Memory::push16(uint16_t &stackPtr, uint16_t value)
 {
     stackPtr -= 2;
@@ -60,7 +64,11 @@ uint8_t Memory::read8bit(uint16_t addr)
 
 void Memory::write8bit(uint16_t addr, uint8_t value)
 {
-    if (addr >= 0xA000 && addr < 0xC000)
+    if (addr >= 0x4000 && addr < 0x8000) {
+        cart_.rom_[addr] = value;
+    }
+
+    else if (addr >= 0xA000 && addr < 0xC000)
     {
         cart_.rom_[addr] = value;
     }
@@ -76,9 +84,16 @@ void Memory::write8bit(uint16_t addr, uint8_t value)
     }
     else if (addr == 0xff04) {
         mmu_.raw[addr] = value;
+        cpu_.get()->timer_.divRegister_ = 0;
     }
-    else if (addr == 0xFF07) {
-        //switch Clock Speed
+    else if (addr == Timer::tac_addr && cpu_.get() != nullptr) {
+        switch(value & 0x03) {
+            case 0: cpu_.get()->timer_.clockSpeed_ = 1024; break;
+            case 1: cpu_.get()->timer_.clockSpeed_ = 16; break;
+            case 2: cpu_.get()->timer_.clockSpeed_ = 64; break;
+            case 3: cpu_.get()->timer_.clockSpeed_ = 256; break;
+        }
+        mmu_.raw[addr] = value | 0xf8;
     }
     else if (addr == LCD_DISPLAY_CTRL) {
 

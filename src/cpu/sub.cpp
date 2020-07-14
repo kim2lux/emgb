@@ -2,6 +2,7 @@
 
 void Z80Cpu::sub8bit(uint8_t &reg, uint8_t sub)
 {
+    tickCount_ += 4;
     set_neg_flag();
 
     if ((reg - sub) == 0x00)
@@ -73,4 +74,9 @@ void Z80Cpu::sub_hl()
 {
     tickCount_ += 4;
     sub8bit(regs_.a, mmu_.read8bit(regs_.hl));
+}
+
+void Z80Cpu::sub_a_8_d6() {
+    tickCount_ += 4;
+    sub8bit(regs_.a, mmu_.read8bit(regs_.pc));
 }

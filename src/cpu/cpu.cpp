@@ -39,6 +39,7 @@ void Z80Cpu::initRegister()
     regs_.hl = 0x014d;
     regs_.sp = 0xfffe;
     regs_.pc = 0x100;
+    tickCount_ = 0;
 
     timer_.clockSpeed_ = 0;
     timer_.divRegister_ = 0;
@@ -71,43 +72,44 @@ void Z80Cpu::updateClockSpeed()
     switch (timer_.tac_ & 0x03)
     {
     case 0:
-        timer_.clockSpeed_ = 4096;
+        timer_.clockSpeed_ = 1024;
         break;
     case 1:
-        timer_.clockSpeed_ = 262144;
+        timer_.clockSpeed_ = 16;
         break;
     case 2:
-        timer_.clockSpeed_ = 65536;
+        timer_.clockSpeed_ = 64;
         break;
     case 3:
-        timer_.clockSpeed_ = 16384;
+        timer_.clockSpeed_ = 256;
         break;
     }
 }
 
-void Z80Cpu::updateTimer()
+void Z80Cpu::updateTimer(uint8_t cycle)
 {
-    timer_.divRegister_ += tickCount_;
+    timer_.divRegister_ += cycle;
     updateClockSpeed();
-    if (isBitSet(timer_.tac_, 2) == true)
+    if (isBitSet(timer_.tac_, 2) == true) //is timer enable ?
     {
-        timer_.timerCycleCounter_ += tickCount_;
+        timer_.timerCycleCounter_ += cycle;
         if (timer_.timerCycleCounter_ >= timer_.clockSpeed_)
         {
 
             timer_.tima_ = mmu_.read8bit(Timer::tima_addr);
+            timer_.timerCycleCounter_ -= timer_.clockSpeed_;
             if (timer_.tima_ == 0xff)
             {
                 timer_.tima_ = mmu_.read8bit(Timer::tma_addr);
                 mmu_.write8bit(Timer::tima_addr, timer_.tima_); // update tma value to tima
                 setBit(interrupt_.interruptRequest_, InterruptType::TIMER);
+                getMemory().write8bit(IF_REGISTER, interrupt_.interruptRequest_);
             }
             else
             {
                 timer_.tima_ += 1;
                 mmu_.write8bit(Timer::tima_addr, timer_.tima_);
             }
-            timer_.timerCycleCounter_ -= tickCount_;
         }
     }
     if (timer_.divRegister_ >= 256)
@@ -155,7 +157,7 @@ void Z80Cpu::processRequestInterrupt()
                             regs_.pc = LCDC_ADDR;
                             break;
                         case InterruptType::TIMER:
-                            // std::cout << "TIMER interrupt" << std::endl;
+                            std::cout << "TIMER interrupt" << std::endl;
                             regs_.pc = TIME_ADDR;
                             break;
                         case InterruptType::JOYPAD:

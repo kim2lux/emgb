@@ -15,7 +15,7 @@ const float DELAY_TIME = 1000.0f / 59.73f;
 
 const int MAX_CYCLES = 70224;
 const float FPS = 59.73f;
-int IMGUI_debugger(Z80Cpu &cpu)
+int IMGUI_debugger(char *rompath)
 {
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
@@ -40,8 +40,17 @@ int IMGUI_debugger(Z80Cpu &cpu)
 	bool debug = true;
 	uint8_t start = 0;
 
-    std::shared_ptr<Gpu> gpu = std::make_shared<Gpu>(cpu);
-	cpu.getMemory().setGpu(gpu);
+
+	Cartridge cart;
+	Joypad joypad;
+	cart.initRom(rompath);
+	Memory memory(cart, joypad);
+	std::shared_ptr<Z80Cpu> cpu = std::make_shared<Z80Cpu>(memory);
+	std::shared_ptr<Gpu> gpu = std::make_shared<Gpu>(*cpu);
+	cpu->getMemory().setGpu(gpu);
+	cpu->getMemory().setCpu(cpu);
+
+
 	std::chrono::time_point<std::chrono::high_resolution_clock> cur, previous;
 	previous = std::chrono::high_resolution_clock::now();
 	while (done == false)
@@ -49,27 +58,26 @@ int IMGUI_debugger(Z80Cpu &cpu)
 		cur = std::chrono::high_resolution_clock::now();
 		auto elapsed = std::chrono::duration_cast<std::chrono::duration<float, std::milli>> (cur - previous);
 		previous = cur;
-		debug = false;
-		start = 0;
-		if (cpu.regs_.pc == 0xffb6)
+		debug = true;
+		if (cpu->regs_.pc == 0xc343)
 		    start = 1;
-		while (debug == true && start == 1)
+		while (debug == false && start == 1)
 		{
 			ImGui_ImplSdl_NewFrame(window);
 			{
 				ImGui::Begin("CPU register state");
 				ImGui::Text("Gameboy debug window");
-				ImGui::Text("a %x f %x af %x", cpu.regs_.a, cpu.regs_.f, cpu.regs_.af);
-				ImGui::Text("b %x c %x bc %x", cpu.regs_.b, cpu.regs_.c, cpu.regs_.bc);
-				ImGui::Text("d %x e %x de %x", cpu.regs_.d, cpu.regs_.e, cpu.regs_.de);
-				ImGui::Text("h %x l %x hl %x", cpu.regs_.h, cpu.regs_.l, cpu.regs_.hl);
-				ImGui::Text("pc %x sp %x", cpu.regs_.pc, cpu.regs_.sp);
+				ImGui::Text("a %x f %x af %x", cpu->regs_.a, cpu->regs_.f, cpu->regs_.af);
+				ImGui::Text("b %x c %x bc %x", cpu->regs_.b, cpu->regs_.c, cpu->regs_.bc);
+				ImGui::Text("d %x e %x de %x", cpu->regs_.d, cpu->regs_.e, cpu->regs_.de);
+				ImGui::Text("h %x l %x hl %x", cpu->regs_.h, cpu->regs_.l, cpu->regs_.hl);
+				ImGui::Text("pc %x sp %x", cpu->regs_.pc, cpu->regs_.sp);
 				ImGui::End();
 			}
 				ImGui::Begin("Stack Pointer");
 				ImGui::Text("SP");
 				for (uint16_t value = 0xcfff; value >= 0xcfe9; value-=2) {
-				    ImGui::Text("%x -> %x", value, cpu.getMemory().read16bit(value));
+				    ImGui::Text("%x -> %x", value, cpu->getMemory().read16bit(value));
 				}
 				ImGui::End();
 
@@ -99,23 +107,29 @@ int IMGUI_debugger(Z80Cpu &cpu)
 			}
 			{
 				ImGui::Begin("Flag Register");
-				ImGui::Text("Z: %s", cpu.isFlagSet(Flag::ZERO_FLAG) ? "1" : "0");
-				ImGui::Text("N: %s", cpu.isFlagSet(Flag::NEG_FLAG) ? "1" : "0");
-				ImGui::Text("H: %s", cpu.isFlagSet(Flag::HALFC_FLAG) ? "1" : "0");
-				ImGui::Text("C: %s", cpu.isFlagSet(Flag::CARRY_FLAG) ? "1" : "0");
+				ImGui::Text("Z: %s", cpu->isFlagSet(Flag::ZERO_FLAG) ? "1" : "0");
+				ImGui::Text("N: %s", cpu->isFlagSet(Flag::NEG_FLAG) ? "1" : "0");
+				ImGui::Text("H: %s", cpu->isFlagSet(Flag::HALFC_FLAG) ? "1" : "0");
+				ImGui::Text("C: %s", cpu->isFlagSet(Flag::CARRY_FLAG) ? "1" : "0");
 				ImGui::End();
 			}
-
+			{
+				ImGui::Begin("Timer");
+				ImGui::Text("Timer Counter TIMA: %x", cpu->timer_.tima_);
+				ImGui::Text("Timer Modulo TMA: %x", cpu->timer_.tma_);
+				ImGui::Text("Timer Control TAC: %x", cpu->timer_.tac_);
+				ImGui::End();
+			}
 			{
 				ImGui::Begin("Interrupt State");
-				ImGui::Text("IE: %x", cpu.getInterrupt().interruptEnable_);
-				ImGui::Text("IF: %x", cpu.getInterrupt().interruptRequest_);
-				ImGui::Text("ime: %d", cpu.getInterrupt().masterInterrupt_);
+				ImGui::Text("IE: %x", cpu->getInterrupt().interruptEnable_);
+				ImGui::Text("IF: %x", cpu->getInterrupt().interruptRequest_);
+				ImGui::Text("ime: %d", cpu->getInterrupt().masterInterrupt_);
 				ImGui::End();
 			}
 			{
 				ImGui::Begin("Opcode");
-				ImGui::Text("Next opcode %x", cpu.getMemory().read8bit(cpu.regs_.pc));
+				ImGui::Text("Next opcode %x", cpu->getMemory().read8bit(cpu->regs_.pc));
 				ImGui::End();
 			}
 
@@ -143,22 +157,28 @@ int IMGUI_debugger(Z80Cpu &cpu)
 			}
 		}
 
-		cpu.tickCount_ = 0;
 		uint32_t prevTickCount = 0;
-		cpu.getMemory().joypad_.handleEvent(event, cpu);
+		cpu->getMemory().joypad_.handleEvent(event, *cpu);
 		gpu->gpuCycle_ = 0;
-		while (cpu.tickCount_ < 70224)
+		cpu->tickCount_ = 0;
+		while (cpu->tickCount_ < 70224)
 		{
-			cpu.updateTimer();
-			prevTickCount = cpu.tickCount_;
-			exec = cpu.getMemory().read8bit(cpu.regs_.pc++);
-			//std::cout << "pc: " << std::hex << (int32_t) (cpu.regs_.pc - 1) << ": " << std::hex << (uint16_t)exec << " -> " << cpu.opcodes_[exec].value << std::endl;
-			cpu.opcodes_[exec].opFunc();
-			if (cpu.fjmp_ == false)
-				cpu.regs_.pc += cpu.opcodes_[exec].size;
-			cpu.fjmp_ = false;
-			gpu->updateGpu(cpu.tickCount_ - prevTickCount);
-			cpu.processRequestInterrupt();
+			
+			prevTickCount = cpu->tickCount_;
+			if (cpu->halt_  == false) {
+				exec = cpu->getMemory().read8bit(cpu->regs_.pc++);
+				//std::cout << "pc: " << std::hex << (int32_t) (cpu->regs_.pc - 1) << ": " << std::hex << (uint16_t)exec << " -> " << cpu->opcodes_[exec].value << std::endl;
+				cpu->opcodes_[exec].opFunc();
+				if (cpu->fjmp_ == false)
+					cpu->regs_.pc += cpu->opcodes_[exec].size;
+			}
+			else {
+				cpu->tickCount_ += 4;
+			}
+			cpu->updateTimer(cpu->tickCount_ - prevTickCount);
+			cpu->fjmp_ = false;
+			gpu->updateGpu(cpu->tickCount_ - prevTickCount);
+			cpu->processRequestInterrupt();
 		}
 	    gpu->render();
 

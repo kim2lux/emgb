@@ -4,6 +4,8 @@
 #include "rom.hpp"
 #include "joypad.hpp"
 #include <memory>
+#include "cpu.hpp"
+
 static constexpr uint16_t serial_data_addr = 0xff01;
 static constexpr uint16_t joypad_state_addr = 0xff00;
 static constexpr uint16_t scanline_value_addr = 0xff44;
@@ -33,18 +35,22 @@ union u_mmu
 
 class Joypad;
 class Gpu;
+class Z80Cpu;
 class Memory
 {
 public:
     Memory(Cartridge &cart, Joypad &joypad) : cart_(cart), joypad_(joypad) {
 		gpu_ = nullptr;
+		cpu_ = nullptr;
 		memoryInit();
 		testScanline_ = 0x89;
 		interupt_ = 0;
 	}
 
 	void setGpu(std::shared_ptr<Gpu> gpu);
+	void setCpu(std::shared_ptr<Z80Cpu> cpu);
 	std::shared_ptr<Gpu> gpu_;
+	std::shared_ptr<Z80Cpu> cpu_;
 	void dmaTransfer(uint8_t value);
 	Cartridge &cart_;
 	Joypad &joypad_;

@@ -51,7 +51,7 @@ void Joypad::keyDown(SDL_Event &event, Z80Cpu &cpu)
 	return;
 }
 
-void Joypad::keyUp(SDL_Event &event, Z80Cpu &cpu)
+void Joypad::keyUp(SDL_Event &event)
 {
 	switch (event.key.keysym.sym)
 	{
@@ -104,7 +104,7 @@ void Joypad::handleEvent(SDL_Event &event, Z80Cpu &cpu)
 			keyDown(event, cpu);
 			break;
 		case SDL_KEYUP:
-			keyUp(event, cpu);
+			keyUp(event);
 			break;
 		}
 	}
