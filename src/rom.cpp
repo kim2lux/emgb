@@ -7,15 +7,28 @@ int Cartridge::loadRom(char *romfile)
     SDL_RWops *rw = SDL_RWFromFile(romfile, "rb");
     assert(rw != nullptr);
     size_ = (unsigned int)SDL_RWsize(rw);
-    nb_read = SDL_RWread(rw, (uint8_t*)&rom_, sizeof(char), size_);
+    nb_read = SDL_RWread(rw, (uint8_t*)&cartridgeType_->rom_, sizeof(char), size_);
+    SDL_RWclose(rw);
     if (nb_read == size_)
         return 0;
     return -1;
 }
 
-void Cartridge::loadHeader()
+int Cartridge::loadHeader(char *romfile)
 {
-    memcpy(&(romheader_), &rom_[header_start], header_end - header_start);
+    unsigned int nb_read;
+
+    std::array<uint8_t, header_end> tmpHeader;
+
+    SDL_RWops *rw = SDL_RWFromFile(romfile, "rb");
+    assert(rw != nullptr);
+    nb_read = SDL_RWread(rw, (uint8_t *)&tmpHeader, sizeof(char), header_end);
+    SDL_RWclose(rw);
+    if (nb_read == header_end) {
+        memcpy(&romheader_, &tmpHeader[header_start], header_end - header_start);
+        return 0;
+    }
+    return -1;
 }
 
 void Cartridge::displayHeader()
@@ -28,9 +41,11 @@ void Cartridge::displayHeader()
 
 int Cartridge::initRom(char *filename)
 {
-    uint8_t ret = loadRom(filename);
+    uint8_t ret = loadHeader(filename);
     assert(ret == 0);
-    loadHeader();
+    loadcartridgeType();
+    ret = loadRom(filename);
+    assert(ret == 0);
     displayHeader();
     return 0;
 }
