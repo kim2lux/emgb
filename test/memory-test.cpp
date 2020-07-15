@@ -3,8 +3,7 @@
 TEST_F(myTestFixture1, memory)
 {
     cpu.getMemory().write8bit(0x3569, 0x3A);
-    ASSERT_EQ(cpu.getMemory().mmu_.raw[0x3569], 0x3A);
-    ASSERT_EQ(cpu.getMemory().mmu_.rom_[0x3569], 0x3A);
+    ASSERT_EQ(cart.cartridgeType_->rom_[0x3569], 0x3A);
 
     cpu.getMemory().write8bit(0x8000, 0x35);
     ASSERT_EQ(cpu.getMemory().mmu_.raw[0x8000], 0x35);

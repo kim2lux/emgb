@@ -2,6 +2,7 @@
 #include "cpu.hpp"
 #include "rom.hpp"
 #include "memory"
+#include <memory>
 
 class myTestFixture1 : public testing::Test
 {
@@ -10,8 +11,10 @@ protected:
     Memory mem;
     Z80Cpu cpu;
     Joypad joypad;
+
     myTestFixture1() : mem(cart, joypad), cpu(mem)
     {
+        cart.cartridgeType_ = std::make_unique<Mcb0>();
         cpu.tickCount_ = 0;
         cpu.regs_.bc = 0x0000;
         cpu.regs_.de = 0x1000;

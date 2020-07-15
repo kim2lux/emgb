@@ -153,9 +153,11 @@ public:
 
 
     uint8_t read8bit(uint16_t addr) {
+        assert(cartridgeType_.get() != nullptr);
         return (cartridgeType_->read8bit(addr));
     }
     void write8bit(uint16_t addr, uint8_t value) {
+        assert(cartridgeType_.get() != nullptr);
         cartridgeType_->write8bit(addr, value);
     }
 
