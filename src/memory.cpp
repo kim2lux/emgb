@@ -52,7 +52,10 @@ uint8_t Memory::read8bit(uint16_t addr)
     {
         return (cart_.read8bit(addr));
     }
-    if (addr == joypad_state_addr)
+    else if (addr >= 0xA000 && addr < 0xC000) {
+        return (cart_.read8bit(addr));
+    }
+    else if (addr == joypad_state_addr)
     {
         return (joypad_.padState());
     }
@@ -64,7 +67,7 @@ uint8_t Memory::read8bit(uint16_t addr)
 
 void Memory::write8bit(uint16_t addr, uint8_t value)
 {
-    if (addr >= 0x4000 && addr < 0x8000) {
+    if (addr < 0x8000) {
         cart_.write8bit(addr, value);
     }
     else if (addr >= 0xA000 && addr < 0xC000)

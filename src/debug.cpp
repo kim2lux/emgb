@@ -59,7 +59,7 @@ int IMGUI_debugger(char *rompath)
 		auto elapsed = std::chrono::duration_cast<std::chrono::duration<float, std::milli>> (cur - previous);
 		previous = cur;
 		debug = true;
-		if (cpu->regs_.pc == 0xc343)
+		if (cpu->regs_.pc == 0x20f)
 		    start = 1;
 		while (debug == false && start == 1)
 		{
@@ -167,7 +167,7 @@ int IMGUI_debugger(char *rompath)
 			prevTickCount = cpu->tickCount_;
 			if (cpu->halt_  == false) {
 				exec = cpu->getMemory().read8bit(cpu->regs_.pc++);
-				//std::cout << "pc: " << std::hex << (int32_t) (cpu->regs_.pc - 1) << ": " << std::hex << (uint16_t)exec << " -> " << cpu->opcodes_[exec].value << std::endl;
+				std::cout << "pc: " << std::hex << (int32_t) (cpu->regs_.pc - 1) << ": " << std::hex << (uint16_t)exec << " -> " << cpu->opcodes_[exec].value << std::endl;
 				cpu->opcodes_[exec].opFunc();
 				if (cpu->fjmp_ == false)
 					cpu->regs_.pc += cpu->opcodes_[exec].size;
