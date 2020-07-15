@@ -57,7 +57,7 @@ void Gpu::updateGpuRegister()
     windowsDisplayEnable_ = isBitSet(lcdCtrl_, 5) ? true: false;
     bgDisplayEnable_ = isBitSet(lcdCtrl_, 0) ? true: false;
     backgroudMap_ = isBitSet(lcdCtrl_, 3) ? bg_tile_map_display_select_high : bg_tile_map_display_select_low;
-    windowMap_ = isBitSet(lcdCtrl_, 6) ? bg_tile_map_display_select_high : bg_tile_map_display_select_low;
+    windowMap_ = isBitSet(lcdCtrl_, 6) ? window_tile_display_map_select_high : window_tile_display_map_select_low;
     tileData_ = isBitSet(lcdCtrl_, 4) ? tile_data_addr_low : tile_data_addr_high;
     if (isBitSet(lcdCtrl_, 4))
     {
@@ -78,8 +78,8 @@ void Gpu::renderBackground()
     uint8_t startX = 0;
 
     for(int32_t idx = 0; idx < 20; ++idx) {
-        startX = idx + scX_;
-         renderTile(idx, startY, startX, backgroudMap_, tileData_);
+        startX = idx + (scX_ / 8);
+        renderTile(idx, startY, startX, backgroudMap_, tileData_);
     }
 }
 
@@ -128,16 +128,16 @@ void Gpu::renderSprite()
                 color |= ((lowerByte >> dec) & 0x01);
                 dec--;
 
-                assert(((posY * gameboy_width) + (x + posX)) < gameboy_width * gameboy_height);
+                assert(((scanline_ * gameboy_width) + (x + posX)) < gameboy_width * gameboy_height);
 
                 if (color == 0)
-                    pixels_[(posY * gameboy_width) + (x + posX)] = SDL_MapRGBA(window_surface_->format, 0xff, 0xff, 0xff, 0);
+                    pixels_[(scanline_ * gameboy_width) + (x + posX)] = SDL_MapRGBA(window_surface_->format, 0xff, 0xff, 0xff, 0);
                 else if (color == 1)
-                    pixels_[(posY * gameboy_width) + (x + posX)] = SDL_MapRGBA(window_surface_->format, 0x44, 0x44, 0x44, 0);
+                    pixels_[(scanline_ * gameboy_width) + (x + posX)] = SDL_MapRGBA(window_surface_->format, 0x44, 0x44, 0x44, 0);
                 else if (color == 2)
-                    pixels_[(posY * gameboy_width) + (x + posX)] = SDL_MapRGBA(window_surface_->format, 0xaa, 0xaa, 0xaa, 0);
+                    pixels_[(scanline_ * gameboy_width) + (x + posX)] = SDL_MapRGBA(window_surface_->format, 0xaa, 0xaa, 0xaa, 0);
                 else if (color == 3)
-                    pixels_[(posY * gameboy_width) + (x + posX)] = SDL_MapRGBA(window_surface_->format, 0, 0, 0, 0);
+                    pixels_[(scanline_ * gameboy_width) + (x + posX)] = SDL_MapRGBA(window_surface_->format, 0, 0, 0, 0);
 
                 color = 0x00;
             }

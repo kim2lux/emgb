@@ -167,7 +167,7 @@ int IMGUI_debugger(char *rompath)
 			prevTickCount = cpu->tickCount_;
 			if (cpu->halt_  == false) {
 				exec = cpu->getMemory().read8bit(cpu->regs_.pc++);
-				std::cout << "pc: " << std::hex << (int32_t) (cpu->regs_.pc - 1) << ": " << std::hex << (uint16_t)exec << " -> " << cpu->opcodes_[exec].value << std::endl;
+				//std::cout << "pc: " << std::hex << (int32_t) (cpu->regs_.pc - 1) << ": " << std::hex << (uint16_t)exec << " -> " << cpu->opcodes_[exec].value << std::endl;
 				cpu->opcodes_[exec].opFunc();
 				if (cpu->fjmp_ == false)
 					cpu->regs_.pc += cpu->opcodes_[exec].size;
@@ -185,10 +185,6 @@ int IMGUI_debugger(char *rompath)
 		if (elapsed.count() < DELAY_TIME)
 		{
 			std::this_thread::sleep_for(std::chrono::duration<float, std::milli>(DELAY_TIME - elapsed.count()));
-		}
-		else
-		{
-			printf("overpassed by %f\n", elapsed.count() - DELAY_TIME);
 		}
 	}
 	ImGui_ImplSdl_Shutdown();

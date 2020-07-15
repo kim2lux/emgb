@@ -157,7 +157,7 @@ void Z80Cpu::processRequestInterrupt()
                             regs_.pc = LCDC_ADDR;
                             break;
                         case InterruptType::TIMER:
-                            std::cout << "TIMER interrupt" << std::endl;
+                            //std::cout << "TIMER interrupt" << std::endl;
                             regs_.pc = TIME_ADDR;
                             break;
                         case InterruptType::JOYPAD:
