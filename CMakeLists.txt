@@ -14,8 +14,9 @@ find_package(SDL2 REQUIRED)
 find_package(OpenGL REQUIRED)
 include_directories(${SDL2_INCLUDE_DIR} ${OPENGL_INCLUDE_DIR} ./include)
 
-add_subdirectory(test)
+
 add_subdirectory(lib/googletest)
+add_subdirectory(test)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -45,7 +46,6 @@ set(SOURCE_FILES
     src/imgui/imgui_draw.cpp
     src/imgui/imgui_impl_sdl.cpp
     src/debug.cpp)
-
 set_source_files_properties(src/cpu.cpp PROPERTIES LANGUAGE CXX)
 set_source_files_properties(src/rom.cpp PROPERTIES LANGUAGE CXX)
 
