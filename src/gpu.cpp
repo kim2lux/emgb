@@ -114,7 +114,6 @@ void Gpu::renderSprite()
             uint16_t spriteTileAddr = OAM_TILE_START_ADDR + (spriteTileIndex * 16);
 
             uint8_t positionInSprite = (scanline_ % 8) * 2;
-            posY += (scanline_ % 8);
             uint8_t upperByte = cpu_.getMemory().read8bit(spriteTileAddr + positionInSprite);
             uint8_t lowerByte = cpu_.getMemory().read8bit(spriteTileAddr + positionInSprite + 1);
 

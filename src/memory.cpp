@@ -166,13 +166,10 @@ void Memory::write8bit(uint16_t addr, uint8_t value)
     {
         mmu_.raw[addr] = value;
     }
-    if (addr == SCX_ADDR) {
-        std::cout << "ScX: " << std::hex << (int32_t) value << std::endl;
-    }
 }
 
 void Memory::dmaTransfer(uint8_t value) {
-    uint16_t srcaddr = value << 8; 
+    uint16_t srcaddr = value << 8;
     for (uint16_t idx = 0; idx < 0xa0; ++idx) {
         write8bit(OAM_MEM_START + idx, read8bit(srcaddr + idx));
     }
