@@ -20,37 +20,39 @@ add_subdirectory(test)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+set(GB_SOURCE_FILES
+src/gpu.cpp
+src/rom.cpp
+src/memory.cpp
+src/joypad.cpp
+src/cb.cpp
+"src/cpu/and.cpp"
+src/cpu/ld.cpp
+src/cpu/cpu.cpp
+src/cpu/inc.cpp
+src/cpu/rotate.cpp
+src/cpu/dec.cpp
+src/cpu/add.cpp
+src/cpu/sbc.cpp
+src/cpu/sub.cpp
+src/cpu/adc.cpp
+src/cpu/jmp.cpp
+src/cpu/stack.cpp
+src/cpu/ctrl.cpp
+src/cpu/rst.cpp
+src/imgui/imgui.cpp
+src/imgui/imgui_demo.cpp
+src/imgui/imgui_draw.cpp
+src/imgui/imgui_impl_sdl.cpp)
+
+add_library(gmb STATIC ${GB_SOURCE_FILES})
+
 set(SOURCE_FILES
     src/main.cpp
-    src/gpu.cpp
-    src/rom.cpp
-    src/memory.cpp
-    src/joypad.cpp
-    src/cb.cpp
-    "src/cpu/and.cpp"
-    src/cpu/ld.cpp
-    src/cpu/cpu.cpp
-    src/cpu/inc.cpp
-    src/cpu/rotate.cpp
-    src/cpu/dec.cpp
-    src/cpu/add.cpp
-    src/cpu/sbc.cpp
-    src/cpu/sub.cpp
-    src/cpu/adc.cpp
-    src/cpu/jmp.cpp
-    src/cpu/stack.cpp
-    src/cpu/ctrl.cpp
-    src/cpu/rst.cpp
-    src/imgui/imgui.cpp
-    src/imgui/imgui_demo.cpp
-    src/imgui/imgui_draw.cpp
-    src/imgui/imgui_impl_sdl.cpp
     src/debug.cpp)
-set_source_files_properties(src/cpu.cpp PROPERTIES LANGUAGE CXX)
-set_source_files_properties(src/rom.cpp PROPERTIES LANGUAGE CXX)
 
 if(UNIX)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -Wall -Wpedantic -Wextra")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -pthread -Wall -Wpedantic -Wextra")
 endif(UNIX)
 
 add_executable(${EXEC_GB_NAME} ${SOURCE_FILES})
@@ -84,5 +86,5 @@ endif(
   OR MINGW)
 
 if(UNIX)
-  target_link_libraries(${EXEC_GB_NAME} ${SDL2_LIBRARY} -pthread -lglut -lGL -lGLU -lGLEW )
+  target_link_libraries(${EXEC_GB_NAME} gmb ${SDL2_LIBRARY} -pthread -lglut -lGL -lGLU -lGLEW )
 endif(UNIX)
