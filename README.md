@@ -14,6 +14,12 @@ Gameboy emulator (C++14 project, rendering through SDL)
 ![alt text](https://github.com/kim2lux/emgb/tree/master/screenshots/mario1.png?raw=true)
 ![alt text](https://github.com/kim2lux/emgb/tree/master/screenshots/mario1.png?raw=true)
 
+* Mario
+![Mario - Screenshot1](screenshots/mario1.png?raw=true) ![Mario - Screenshot2](screenshots/mario2.png?raw=true) 
+
+* Tetris
+![Tetris - Screenshot1](screenshots/tetris1.png?raw=true) ![Tetris - Screenshot2](screenshots/tetris2.png?raw=true) 
+
 # Todo
 
 * Improve Rom Banking and support MCB2 MCB3 Cartridge type
