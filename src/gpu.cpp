@@ -150,9 +150,7 @@ void Gpu::renderSprite()
                     return;
                 assert(((scanline_ * gameboy_width) + (x + posX)) < gameboy_width * gameboy_height);
 
-                if (color == 0)
-                    pixels_[(scanline_ * gameboy_width) + (x + posX)] = SDL_MapRGBA(window_surface_->format, 0xff, 0xff, 0xff, 0);
-                else if (color == 1)
+                if (color == 1)
                     pixels_[(scanline_ * gameboy_width) + (x + posX)] = SDL_MapRGBA(window_surface_->format, 0x44, 0x44, 0x44, 0);
                 else if (color == 2)
                     pixels_[(scanline_ * gameboy_width) + (x + posX)] = SDL_MapRGBA(window_surface_->format, 0xaa, 0xaa, 0xaa, 0);
