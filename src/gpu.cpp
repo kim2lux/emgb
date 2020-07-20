@@ -25,7 +25,7 @@ void Gpu::renderTile(int32_t idx, uint8_t startY, uint8_t startX, uint16_t mapSt
     uint8_t lowerByte = cpu_.getMemory().read8bit(tileDataAddr + positionInTile + 1);
 
     int color = 0;
-    uint8_t bitPos = startX % 8;
+    int8_t bitPos = startX % 8;
     bitPos -= 7;
     bitPos = -bitPos;
 
@@ -103,17 +103,30 @@ void Gpu::renderSprite()
     for (uint8_t idx = 0; idx < 40; ++idx)
     {
         uint8_t posY = cpu_.getMemory().read8bit(OAM_START_ADDR + (idx * 4)) - 16;
-
-        if (posY <= scanline_ && posY + 8 >= scanline_)
+        uint8_t linePos = 8;
+        bool size8_16 = isBitSet(lcdCtrl_, 2);
+        if(size8_16) {
+            linePos = 16;
+        }
+        if (posY <= scanline_ && posY + linePos >= scanline_)
         {
             uint8_t posX = cpu_.getMemory().read8bit(OAM_START_ADDR + (idx * 4) + 1) - 8;
+
             uint8_t spriteTileIndex = cpu_.getMemory().read8bit(OAM_START_ADDR + (idx * 4) + 2);
             uint8_t spriteTileAttribute = cpu_.getMemory().read8bit(OAM_START_ADDR + (idx * 4) + 3);
             bool yFlip = (spriteTileAttribute >> 6) & 0x01;
             bool xFlip = (spriteTileAttribute >> 5) & 0x01;
+           
+            int8_t positionInSprite = 0;
+            positionInSprite = (scanline_ - posY);
+
+            if (yFlip) {
+                positionInSprite -= linePos;
+                positionInSprite = -positionInSprite;
+            }
+            positionInSprite *= 2;
             uint16_t spriteTileAddr = OAM_TILE_START_ADDR + (spriteTileIndex * 16);
 
-            uint8_t positionInSprite = (scanline_ % 8) * 2;
             uint8_t upperByte = cpu_.getMemory().read8bit(spriteTileAddr + positionInSprite);
             uint8_t lowerByte = cpu_.getMemory().read8bit(spriteTileAddr + positionInSprite + 1);
 
@@ -133,6 +146,8 @@ void Gpu::renderSprite()
                 } else {
                     dec--;
                 }
+                if (posX + 7 > 160)
+                    return;
                 assert(((scanline_ * gameboy_width) + (x + posX)) < gameboy_width * gameboy_height);
 
                 if (color == 0)
