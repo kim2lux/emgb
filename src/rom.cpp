@@ -43,10 +43,10 @@ int Cartridge::initRom(char *filename)
 {
     uint8_t ret = loadHeader(filename);
     assert(ret == 0);
+    displayHeader();
     loadcartridgeType();
     ret = loadRom(filename);
     assert(ret == 0);
-    displayHeader();
     return 0;
 }
 

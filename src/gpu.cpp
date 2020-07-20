@@ -83,6 +83,8 @@ void Gpu::renderBackground()
 
 void Gpu::renderWindow()
 {
+    if (scanline_ < winY_)
+        return;
     if (winX_ > 7) {
         winX_ -= 7;
     }
@@ -116,7 +118,7 @@ void Gpu::renderSprite()
             uint8_t spriteTileAttribute = cpu_.getMemory().read8bit(OAM_START_ADDR + (idx * 4) + 3);
             bool yFlip = (spriteTileAttribute >> 6) & 0x01;
             bool xFlip = (spriteTileAttribute >> 5) & 0x01;
-           
+
             int8_t positionInSprite = 0;
             positionInSprite = (scanline_ - posY);
 
