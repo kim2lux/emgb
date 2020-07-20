@@ -1,30 +1,35 @@
-Another Gameboy emulator (C project, rendering through SDL)
+Gameboy emulator (C++14 project, rendering through SDL)
 
+# GameBoy emulator status
+- CPU instructions are now implemented
+- Interrupts are working fine (Joypad, LCDC, H-BLANK, TIMER)
+- All Blarggs test are passing except the DAA instruction: https://gbdev.gg8.se/wiki/articles/Test_ROMs
+- Rom and Ram Banking are still work in progress. I have been able to validate Tetris and Super Mario land launching. 
+- Do not expect to be able to play any other game (Mario sprites rendering is still buggy)
 
-# Z80 CPU
-- Most of CPU instructions are now implemented
-- CB opcode is still missing, currently using https://github.com/CTurt/Cinoop/blob/master/source/cb.c
+# Images
 
-# TODO 
-cpu instructions : 
-- DAA
-- PUSH/POP (AF)
-- RAM Writing error (vram not loaded properly for mario)
+![alt text](https://github.com/kim2lux/emgb/tree/master/screenshots/tetris1.jpg?raw=true)
+![alt text](https://github.com/kim2lux/emgb/tree/master/screenshots/tetris2.jpg?raw=true)
+![alt text](https://github.com/kim2lux/emgb/tree/master/screenshots/mario1.jpg?raw=true)
+![alt text](https://github.com/kim2lux/emgb/tree/master/screenshots/mario1.jpg?raw=true)
 
-gpu:
-- Background rendering is still messy, need optimization and code clearing
-- Sprite rendering is basic => need to implement sprite tile options 
+# Todo
 
-# How to
+* Improve Rom Banking and support MCB2 MCB3 Cartridge type
+* Debug refactoring and class definition in order to ease development
+  - setCpu setMemory shared pointer to be reworked asap
+* Implement CB instructions
 
-build:
-I could test on windows and Debian/Ubuntu
+# How to Build
+emgb is only able to build on unix Like system for now
 
-Windows: 
-I could use both MSYS & Visual Studio (create new project & link file for now)
-For MSYS build you can directly build thanks to cmake
+** Linux **
 
-Linux: 
-Use the cmake & make sure you installed SDL2 library
-
+* git submodule update in order to retrieve gtest framework.
+* Make sure to add the CXX 14 support within gtest CMakeList.txt
+    - set(CMAKE_CXX_STANDARD 14)
+    - set(CMAKE_CXX_STANDARD_REQUIRED ON)
+* Use the cmake & make sure you installed SDL2 & Opengl glu library
+* cmake .. && make -j8; ./gameboy rom
 
