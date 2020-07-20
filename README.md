@@ -9,10 +9,10 @@ Gameboy emulator (C++14 project, rendering through SDL)
 
 # Images
 
-![alt text](https://github.com/kim2lux/emgb/tree/master/screenshots/tetris1.jpg?raw=true)
-![alt text](https://github.com/kim2lux/emgb/tree/master/screenshots/tetris2.jpg?raw=true)
-![alt text](https://github.com/kim2lux/emgb/tree/master/screenshots/mario1.jpg?raw=true)
-![alt text](https://github.com/kim2lux/emgb/tree/master/screenshots/mario1.jpg?raw=true)
+![alt text](https://github.com/kim2lux/emgb/tree/master/screenshots/tetris1.png?raw=true)
+![alt text](https://github.com/kim2lux/emgb/tree/master/screenshots/tetris2.png?raw=true)
+![alt text](https://github.com/kim2lux/emgb/tree/master/screenshots/mario1.png?raw=true)
+![alt text](https://github.com/kim2lux/emgb/tree/master/screenshots/mario1.png?raw=true)
 
 # Todo
 
