@@ -15,8 +15,15 @@ Gameboy emulator (C++14 project, rendering through SDL)
 
 * Tetris
 
-
 ![Tetris - Screenshot1](screenshots/tetris1.png?raw=true) ![Tetris - Screenshot2](screenshots/tetris2.png?raw=true) 
+
+* Dr Mario
+
+![Dr Mario - Screenshot1](screenshots/drmario1.png?raw=true) ![Dr Mario - Screenshot2](screenshots/drmario2.png?raw=true) 
+
+* Soccer
+
+![Soccer - Screenshot1](screenshots/soccer1.png?raw=true) ![Soccer - Screenshot2](screenshots/soccer2.png?raw=true) 
 
 # Todo
 
