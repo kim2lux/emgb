@@ -4,10 +4,15 @@ Gameboy emulator (C++14 project, rendering through SDL)
 - CPU instructions are now implemented
 - Interrupts are working fine (Joypad, LCDC, H-BLANK, TIMER)
 - All Blarggs test are passing except the DAA instruction: https://gbdev.gg8.se/wiki/articles/Test_ROMs
-- Rom and Ram Banking are still work in progress. I have been able to validate Tetris and Super Mario land launching. 
-- Do not expect to be able to play any other game (Mario sprites rendering is still buggy)
+- Rom and Ram Banking are still work in progress.
 
 # Images
+
+* Pokemon
+
+![Pokemon - Screenshot1](screenshots/pokemon1.png?raw=true) ![Pokemon - Screenshot2](screenshots/pokemon2.png?raw=true) 
+![Pokemon - Screenshot3](screenshots/pokemon3.png?raw=true) ![Pokemon - Screenshot4](screenshots/pokemon4.png?raw=true) 
+![Pokemon - Screenshot5](screenshots/pokemon5.png?raw=true)
 
 * Mario
 
@@ -24,6 +29,8 @@ Gameboy emulator (C++14 project, rendering through SDL)
 * Soccer
 
 ![Soccer - Screenshot1](screenshots/soccer1.png?raw=true) ![Soccer - Screenshot2](screenshots/soccer2.png?raw=true) 
+
+
 
 # Todo
 
