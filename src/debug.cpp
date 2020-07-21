@@ -160,7 +160,7 @@ int IMGUI_debugger(char *rompath, char *saveState = nullptr)
     cpu->getMemory().setGpu(gpu);
     cpu->getMemory().setCpu(cpu);
 
-    Debug dbg;
+    //Debug dbg;
     if (saveState != nullptr) {
         load(cpu, saveState);
     }
@@ -169,7 +169,7 @@ int IMGUI_debugger(char *rompath, char *saveState = nullptr)
     previous = std::chrono::high_resolution_clock::now();
     while (done == false)
     {
-        dbg.renderDebug(cpu, gpu);
+        //dbg.renderDebug(cpu, gpu);
         cur = std::chrono::high_resolution_clock::now();
         auto elapsed = std::chrono::duration_cast<std::chrono::duration<float, std::milli>>(cur - previous);
         previous = cur;
