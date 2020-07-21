@@ -12,11 +12,15 @@ class Z80Cpu;
 class Joypad
 {
 public:
+    std::string rompath_;
 	Joypad()
 	{
 		key_ = 0xff;
 		keyButton_ = 0x0f;
 		dirButton_ = 0x0f;
+	}
+	void setRomPath(char * rom) {
+		rompath_.assign(rom);
 	}
 	uint8_t padState();
 	void keyDown(SDL_Event &event, Z80Cpu &cpu);

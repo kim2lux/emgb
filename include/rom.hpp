@@ -94,14 +94,8 @@ public:
     }
 
     uint32_t load(const std::vector<uint8_t> & buffer) override {
-        for (uint32_t idx = 0; idx <  (RAM_BANK_SIZE * 0x10); ++idx) {
-            ram_[idx] = buffer[idx + 0x10000];
-            std::cout << "ram idx: " << (int32_t)idx << " value: " << std::hex << (int32_t)ram_[idx] << std::endl;
-        }
         currentRomBank_ = buffer[(RAM_BANK_SIZE * 0x10) + 0x10000];
         currentRamBank_ = buffer[(RAM_BANK_SIZE * 0x10) + 0x10000 + 1];
-        std::cout << "currentRomBank_: " <<  (int32_t)currentRomBank_ << std::endl;
-        std::cout << "currentRamBank_: " << (int32_t) currentRamBank_ << std::endl;
         return ((RAM_BANK_SIZE * 0x10) + 0x10000 + 2);
     }
 
@@ -112,10 +106,6 @@ public:
         for (uint32_t idx = 0; idx <  (RAM_BANK_SIZE * 0x10); ++idx) {
             serialize.push_back(ram_[idx]);
         }
-        std::cout << "ram size: " << (int32_t)serialize.size() << std::endl;
-
-        std::cout << "currentRomBank_: " << currentRomBank_ << std::endl;
-        std::cout << "currentRamBank_: " << currentRamBank_ << std::endl;
         serialize.push_back(currentRomBank_);
         serialize.push_back(currentRamBank_);
         return serialize;

@@ -117,12 +117,16 @@ void Joypad::handleEvent(SDL_Event &event, Z80Cpu &cpu)
 void Joypad::save(const Z80Cpu &cpu)
 {
 	std::vector<uint8_t> tosave;
+	size_t found = rompath_.find_last_of("/\\");
 	tosave = std::move(cpu.getMemory().serialize());
 	std::vector<uint8_t> cartsave = std::move(cpu.getMemory().cart_.cartridgeType_->serialize());
 	std::vector<uint8_t> cpusave = std::move(cpu.serialize());
 
+	std::string filename = rompath_.substr(found+1) + ".save";
+	std::cout << "saving in: " << filename << std::endl;
 	std::copy(cartsave.begin(), cartsave.end(), std::back_inserter(tosave));
 	std::copy(cpusave.begin(), cpusave.end(), std::back_inserter(tosave));
-	std::ofstream outputfile("save.bin", std::ofstream::binary | std::ofstream::out | std::ofstream::trunc);
+	std::ofstream outputfile(filename, std::ofstream::binary | std::ofstream::out | std::ofstream::trunc);
 	std::copy(tosave.begin(), tosave.end(), std::ostream_iterator<uint8_t>(outputfile));
+	outputfile.close();
 }

@@ -126,28 +126,22 @@ public:
     }
 };
 
-void load(std::shared_ptr<Z80Cpu> cpu)
+void load(std::shared_ptr<Z80Cpu> cpu, char *saveState)
 {
-    std::ifstream input("/home/jdellinger/workspace/emgb/build/save.bin", std::ios::binary | std::ios::in);
+    std::ifstream input(saveState, std::ios::binary | std::ios::in);
 
     input.seekg(0, std::ios::end);
     auto fileSize = input.tellg();
     input.seekg(0, std::ios::beg);
 
+    assert(fileSize != 0);
     std::vector<uint8_t> buffer(fileSize);
     buffer.resize(fileSize);
     input.read((char*)buffer.data(), fileSize);
-    std::cout << "buffer load size: " << buffer.size() << std::endl;
-    int idx = 0;
-    for (auto x : buffer)
-    {
-        std::cout << "idx: " << std::hex << (int32_t)idx << " " << (int32_t)x << std::endl;
-        idx++;
-    }
     cpu->getMemory().load(buffer);
     uint32_t pos = cpu->getMemory().cart_.cartridgeType_->load(buffer);
-
     cpu->load(buffer, pos);
+    input.close();
 }
 
 int IMGUI_debugger(char *rompath, char *saveState = nullptr)
@@ -160,6 +154,7 @@ int IMGUI_debugger(char *rompath, char *saveState = nullptr)
     Joypad joypad;
     cart.initRom(rompath);
     Memory memory(cart, joypad);
+    joypad.setRomPath(rompath);
     std::shared_ptr<Z80Cpu> cpu = std::make_shared<Z80Cpu>(memory);
     std::shared_ptr<Gpu> gpu = std::make_shared<Gpu>(*cpu);
     cpu->getMemory().setGpu(gpu);
@@ -167,7 +162,7 @@ int IMGUI_debugger(char *rompath, char *saveState = nullptr)
 
     Debug dbg;
     if (saveState != nullptr) {
-        load(cpu);
+        load(cpu, saveState);
     }
 
     std::chrono::time_point<std::chrono::high_resolution_clock> cur, previous;
