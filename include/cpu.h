@@ -74,14 +74,6 @@ struct s_register
   unsigned short sp;
 };
 #pragma GCC diagnostic pop
-struct s_cpu
-{
-  struct s_cpu_z80 gb_cpu_z80[256];
-  unsigned int totalTick;
-  unsigned char stopCpu;
-  unsigned char jmpf;
-};
-
 #pragma pack(pop)
 
 #define SET_ZERO() cpu.regs_.f |= 0x80

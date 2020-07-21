@@ -174,6 +174,9 @@ void Z80Cpu::processRequestInterrupt()
                     }
                 }
             }
+            if (halt_ == true) {
+                halt_ = false;
+            }
         }
         else if (halt_ == true) {
             halt_ = false;
@@ -462,7 +465,7 @@ Z80Cpu::Z80Cpu(Memory &memory) : mmu_(memory)
     };
 }
 
-Memory &Z80Cpu::getMemory()
+Memory &Z80Cpu::getMemory() const
 {
     return mmu_;
 }

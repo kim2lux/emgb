@@ -50,7 +50,7 @@ private:
 public:
     static constexpr uint32_t clockspeed = 4194304;
     Z80Cpu(Memory &memory);
-    Memory &getMemory();
+    Memory &getMemory() const;
     Timer timer_;
     s_register regs_;
     uint32_t tickCount_;
@@ -59,6 +59,62 @@ public:
     bool fjmp_;
     bool running_ = true;
     bool halt_ = false;
+
+    void load(const std::vector<uint8_t> &buffer, uint32_t pos) {
+        regs_.a = buffer[pos++];
+        regs_.f = buffer[pos++];
+        regs_.b = buffer[pos++];
+        regs_.c = buffer[pos++];
+        regs_.d = buffer[pos++];
+        regs_.e = buffer[pos++];
+        regs_.h = buffer[pos++];
+        regs_.l = buffer[pos++];
+        std::cout << "a: " << (int32_t)regs_.a << std::endl;
+        std::cout << "f: " << (int32_t)regs_.f << std::endl;
+        std::cout << "b: " << (int32_t)regs_.b << std::endl;
+        std::cout << "c: " << (int32_t)regs_.c << std::endl;
+        std::cout << "d: " << (int32_t)regs_.d << std::endl;
+        std::cout << "e: " << (int32_t)regs_.e << std::endl;
+        std::cout << "h: " << (int32_t)regs_.h << std::endl;
+        std::cout << "l: " << (int32_t)regs_.l << std::endl;
+        regs_.pc = buffer[pos++];
+        regs_.pc |= buffer[pos] << 8;
+        pos++;
+        regs_.sp = buffer[pos++];
+        regs_.sp |= buffer[pos] << 8;
+        std::cout << "pc: " << (int32_t)regs_.pc << std::endl;
+        std::cout << "sp: " << (int32_t) regs_.sp << std::endl;
+        interrupt_.masterInterrupt_ = true;
+    }
+
+    std::vector<uint8_t> serialize() const {
+        std::vector<uint8_t> serialize;
+        serialize.push_back(regs_.a);
+        serialize.push_back(regs_.f);
+        serialize.push_back(regs_.b);
+        serialize.push_back(regs_.c);
+        serialize.push_back(regs_.d);
+        serialize.push_back(regs_.e);
+        serialize.push_back(regs_.h);
+        serialize.push_back(regs_.l);
+        std::cout << "a: " << (int32_t) regs_.a << std::endl;
+        std::cout << "f: " << (int32_t) regs_.f << std::endl;
+        std::cout << "b: " << (int32_t) regs_.b << std::endl;
+        std::cout << "c: " << (int32_t) regs_.c << std::endl;
+        std::cout << "d: " << (int32_t) regs_.d << std::endl;
+        std::cout << "e: " << (int32_t) regs_.e << std::endl;
+        std::cout << "h: " << (int32_t) regs_.h << std::endl;
+        std::cout << "l: " << (int32_t) regs_.l << std::endl;
+
+        std::cout << "pc: " << (int32_t) regs_.pc << std::endl;
+        std::cout << "sp: " << (int32_t) regs_.sp << std::endl;
+
+        serialize.push_back(regs_.pc & 0xff);
+        serialize.push_back(regs_.pc >> 8 & 0xff);
+        serialize.push_back(regs_.sp & 0xff);
+        serialize.push_back(regs_.sp >> 8 & 0xff);
+        return serialize;
+    }
 
     // timer
     void updateTimer(uint8_t cycle);

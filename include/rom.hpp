@@ -36,6 +36,12 @@ class CartridgeTypeInterface
 public:
     virtual uint8_t read8bit(uint16_t addr) = 0;
     virtual void write8bit(uint16_t addr, uint8_t value) = 0;
+    virtual std::vector<uint8_t> serialize() {
+        return {};
+    }
+    virtual uint32_t load(const std::vector<uint8_t> & buffer) {
+        return buffer.size();
+    }
 
     CartridgeTypeInterface()
     {
@@ -80,11 +86,39 @@ public:
 
     Mcb1()
     {
-        memset(&ram_, 0xff, RAM_BANK_SIZE * 4);
+        memset(&ram_, 0xff, RAM_BANK_SIZE * 16);
         currentRomBank_ = 1;
         currentRamBank_ = 0;
         mode_ = RomSelect::ROM;
         ramEnable_ = false;
+    }
+
+    uint32_t load(const std::vector<uint8_t> & buffer) override {
+        for (uint32_t idx = 0; idx <  (RAM_BANK_SIZE * 0x10); ++idx) {
+            ram_[idx] = buffer[idx + 0x10000];
+            std::cout << "ram idx: " << (int32_t)idx << " value: " << std::hex << (int32_t)ram_[idx] << std::endl;
+        }
+        currentRomBank_ = buffer[(RAM_BANK_SIZE * 0x10) + 0x10000];
+        currentRamBank_ = buffer[(RAM_BANK_SIZE * 0x10) + 0x10000 + 1];
+        std::cout << "currentRomBank_: " <<  (int32_t)currentRomBank_ << std::endl;
+        std::cout << "currentRamBank_: " << (int32_t) currentRamBank_ << std::endl;
+        return ((RAM_BANK_SIZE * 0x10) + 0x10000 + 2);
+    }
+
+    std::vector<uint8_t> serialize() {
+        std::vector<uint8_t> serialize;
+
+        serialize.reserve((RAM_BANK_SIZE * 0x10) + 2);
+        for (uint32_t idx = 0; idx <  (RAM_BANK_SIZE * 0x10); ++idx) {
+            serialize.push_back(ram_[idx]);
+        }
+        std::cout << "ram size: " << (int32_t)serialize.size() << std::endl;
+
+        std::cout << "currentRomBank_: " << currentRomBank_ << std::endl;
+        std::cout << "currentRamBank_: " << currentRamBank_ << std::endl;
+        serialize.push_back(currentRomBank_);
+        serialize.push_back(currentRamBank_);
+        return serialize;
     }
 
     uint8_t read8bit(uint16_t addr)
@@ -148,7 +182,8 @@ public:
                     currentRomBank_ = 1;
                 }
             }
-            else if (mode_ == RomSelect::RAM) {
+            else if (mode_ == RomSelect::RAM)
+            {
                 currentRamBank_ = value & 0x03;
             }
         }
@@ -172,9 +207,9 @@ public:
     }
 };
 
-class Mcb3: public Mcb1 {
+class Mcb3 : public Mcb1
+{
 public:
-
     uint8_t read8bit(uint16_t addr)
     {
         if (addr <= 0x3FFF)
@@ -183,7 +218,7 @@ public:
         }
         else if (addr <= 0x7FFF)
         {
-            uint32_t romBankAddr = (currentRomBank_) * ROM_BANK_SIZE;
+            uint32_t romBankAddr = (currentRomBank_)*ROM_BANK_SIZE;
 
             return rom_[(addr - 0x4000) + romBankAddr];
         }
@@ -212,20 +247,16 @@ public:
 
         else if (addr >= 0x2000 && addr <= 0x3fff)
         {
-            if (mode_ == RomSelect::ROM)
+            currentRomBank_ = value & 0x7f;
+            if (currentRomBank_ == 0)
             {
-                currentRomBank_ = value & 0x7f;
-                if (currentRomBank_ == 0) {
-                    currentRomBank_ = 1;
-                }
+                currentRomBank_ = 1;
             }
         }
 
         else if (addr >= 0x4000 && addr <= 0x5fff)
         {
-            if (mode_ == RomSelect::RAM) {
-                currentRamBank_ = value & 0x40;
-            }
+            currentRamBank_ = value & 0x7f;
         }
         else if (addr >= 0xA000 && addr < 0xC000)
         {
@@ -236,7 +267,8 @@ public:
     }
 };
 
-class Mcb5: public Mcb1 {
+class Mcb5 : public Mcb1
+{
 public:
     uint16_t currentRomBankMCB5_ = 0;
     uint8_t read8bit(uint16_t addr)
@@ -248,12 +280,13 @@ public:
         else if (addr <= 0x7FFF)
         {
             uint32_t romBankAddr;
-            if (currentRomBankMCB5_ != 0) {
+            if (currentRomBankMCB5_ != 0)
+            {
                 romBankAddr = (currentRomBankMCB5_ - 1) * ROM_BANK_SIZE;
             }
             else
             {
-                romBankAddr = (currentRomBankMCB5_) * ROM_BANK_SIZE;
+                romBankAddr = (currentRomBankMCB5_)*ROM_BANK_SIZE;
             }
             return rom_[addr + romBankAddr];
         }
@@ -286,7 +319,7 @@ public:
             hBit = (currentRomBankMCB5_ >> 16) & 0x01;
             currentRomBankMCB5_ = value & 0xff;
             currentRomBankMCB5_ |= (hBit << 16);
-            if (currentRomBankMCB5_ == 20 || currentRomBankMCB5_ == 40 ||currentRomBankMCB5_ == 60)
+            if (currentRomBankMCB5_ == 20 || currentRomBankMCB5_ == 40 || currentRomBankMCB5_ == 60)
             {
                 currentRomBankMCB5_ += 1;
             }
@@ -294,11 +327,13 @@ public:
 
         else if (addr >= 0x3000 && addr <= 0x3fff)
         {
-            if (value != 0) {
-                currentRomBankMCB5_ |= 1<<16;
+            if (value != 0)
+            {
+                currentRomBankMCB5_ |= 1 << 16;
             }
-            else {
-                currentRomBankMCB5_ &= ~(1<<16);
+            else
+            {
+                currentRomBankMCB5_ &= ~(1 << 16);
             }
         }
         else if (addr >= 0x6000 && addr <= 0x7fff)
