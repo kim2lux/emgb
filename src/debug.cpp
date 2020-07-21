@@ -28,7 +28,6 @@ public:
 		ImGui_ImplSdl_Shutdown();
 		SDL_GL_DeleteContext(glContext_);
 		SDL_DestroyWindow(window_);
-		clearColor_ = ImColor(114, 144, 154);
 	}
 
 	Debug()
@@ -43,6 +42,7 @@ public:
 
 		// Setup ImGui binding
 		ImGui_ImplSdl_Init(window_);
+		clearColor_ = ImColor(60, 60, 60);
 	}
 	void renderDebug(const std::shared_ptr<Z80Cpu> &cpu, const std::shared_ptr<Gpu> &gpu)
 	{
