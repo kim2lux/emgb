@@ -86,5 +86,5 @@ endif(
   OR MINGW)
 
 if(UNIX)
-  target_link_libraries(${EXEC_GB_NAME} gmb ${SDL2_LIBRARY} -pthread -lglut -lGL -lGLU -lGLEW )
+  target_link_libraries(${EXEC_GB_NAME} gmb ${SDL2_LIBRARY} -pthread)
 endif(UNIX)
