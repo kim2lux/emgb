@@ -159,6 +159,7 @@ int IMGUI_debugger(char *rompath, char *saveState = nullptr)
     std::shared_ptr<Gpu> gpu = std::make_shared<Gpu>(*cpu);
     cpu->getMemory().setGpu(gpu);
     cpu->getMemory().setCpu(cpu);
+    joypad.setGpu(gpu);
 
     //Debug dbg;
     if (saveState != nullptr) {

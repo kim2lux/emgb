@@ -71,7 +71,6 @@ void Gpu::updateGpuRegister()
 
 void Gpu::renderBackground()
 {
-    //updateGpuRegister(); update LcdCtrol within rendering func
     uint8_t startY = scanline_ + scY_;
     uint8_t startX = 0;
 
@@ -184,21 +183,35 @@ void Gpu::rendering()
     }
 }
 
+void Gpu::updateWindow(uint32_t width, uint32_t height) {
+    SDL_FreeSurface(window_surface_);
+    SDL_DestroyWindow(window_);
+    window_ = SDL_CreateWindow("gameboy", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_OPENGL);
+    window_surface_ = SDL_GetWindowSurface(window_);
+}
+
 void Gpu::initDisplay()
 {
-    window_ = SDL_CreateWindow("gameboy", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, gameboy_width, gameboy_height, 0);
+    window_ = SDL_CreateWindow("gameboy", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, gameboy_width * 2, gameboy_height * 2, SDL_WINDOW_OPENGL);
     if (window_ == NULL)
         LOG("SDL_CreateWindow Fail", LogStatus::CRITICAL);
+    tmp_surface_= SDL_CreateRGBSurface(0, 160, 144, 32,
+        0,
+        0,
+        0,
+        0);
     window_surface_ = SDL_GetWindowSurface(window_);
-    if (window_surface_->pixels == nullptr) {
+
+    if (tmp_surface_->pixels == nullptr || window_surface_ == nullptr) {
         LOG("window_surface_ nullptr", LogStatus::CRITICAL);
     }
-    pixels_ = (uint32_t*)window_surface_->pixels;
-    std::cout << "bpp: " << (int32_t)window_surface_->format->BytesPerPixel << std::endl;
-    std::cout << SDL_GetPixelFormatName(window_surface_->format->format) << std::endl;
+    pixels_ = (uint32_t*)tmp_surface_->pixels;
+    std::cout << "bpp: " << (int32_t)tmp_surface_->format->BytesPerPixel << std::endl;
+    std::cout << SDL_GetPixelFormatName(tmp_surface_->format->format) << std::endl;
 }
 
 void Gpu::render()
 {
+    SDL_BlitScaled(tmp_surface_, NULL, window_surface_, NULL);
     SDL_UpdateWindowSurface(window_);
 }

@@ -67,8 +67,10 @@ public:
     uint8_t winX_;
     bool unsign_;
     SDL_Surface *window_surface_;
+    SDL_Surface *tmp_surface_;
 
 public:
+    void updateWindow(uint32_t width, uint32_t height);
     void simpleRender();
     void rendering();
     void render();

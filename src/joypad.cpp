@@ -1,7 +1,7 @@
 #include "joypad.hpp"
 #include "cpu.hpp"
 #include "utils.h"
-
+#include "gpu.hpp"
 uint8_t Joypad::padState()
 {
 	if ((key_ & 0x20) == 0)
@@ -9,6 +9,10 @@ uint8_t Joypad::padState()
 	else if ((key_ & 0x10) == 0)
 		return (0xc0 | dirButton_ | 0x20);
 	return (0xf0);
+}
+
+void Joypad::setGpu(std::shared_ptr<Gpu> gpu) {
+    gpu_ = gpu;
 }
 
 void Joypad::keyDown(SDL_Event &event, Z80Cpu &cpu)
@@ -50,6 +54,12 @@ void Joypad::keyDown(SDL_Event &event, Z80Cpu &cpu)
 	case SDLK_F5:
 	    std::cout << "saving..." << std::endl;
 	    save(cpu);
+		break;
+	case SDLK_F6:
+	    gpu_->updateWindow(320, 288);
+		break;
+	case SDLK_F7:
+	    gpu_->updateWindow(160, 144);
 		break;
 	}
 	return;

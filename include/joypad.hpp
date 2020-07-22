@@ -9,6 +9,7 @@
 #include "memory.hpp"
 
 class Z80Cpu;
+class Gpu;
 class Joypad
 {
 public:
@@ -22,6 +23,9 @@ public:
 	void setRomPath(char * rom) {
 		rompath_.assign(rom);
 	}
+    void setGpu(std::shared_ptr<Gpu> gpu);
+	std::shared_ptr<Gpu> gpu_;
+
 	uint8_t padState();
 	void keyDown(SDL_Event &event, Z80Cpu &cpu);
 	void keyUp(SDL_Event &event);
