@@ -29,7 +29,6 @@ void Z80Cpu::set_carry_flag() { regs_.f |= 0x10; }
 void Z80Cpu::clear_carry_flag() { regs_.f &= ~(0x10); }
 
 void Z80Cpu::clear_flags() { regs_.f = 0; }
-bool Z80Cpu::isFlagSet(Flag f);
 
 void Z80Cpu::initRegister()
 {
