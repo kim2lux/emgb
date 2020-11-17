@@ -3,8 +3,7 @@ Gameboy emulator (C++14 project, rendering through SDL)
 # GameBoy emulator status
 - CPU instructions are now implemented
 - Interrupts are working fine (Joypad, LCDC, H-BLANK, TIMER)
-- All Blarggs test are passing except the DAA instruction: https://gbdev.gg8.se/wiki/articles/Test_ROMs
-- Rom and Ram Banking are still work in progress.
+- All Blarggs test are passing except the DAA instruction: https://gbdev.gg8.se/wiki/articles/Test_ROMs.
 
 # Images
 
